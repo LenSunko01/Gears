@@ -9,4 +9,4 @@ curl -X PUT localhost:8080/users/3 -H 'Content-type:application/json' -d '{"name
 
 curl -X DELETE localhost:8080/users/3                                                                               -- удалить юзера с id 3
 
-curl -v localhost:8080/random                                                                                       -- список всех юзеров
+curl -v localhost:8080/random                                                                                       -- рандомный юзер
