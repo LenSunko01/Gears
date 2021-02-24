@@ -1,8 +1,12 @@
-package com.example.demo;
+package com.example.demo.web.controllers;
 
 import java.util.List;
 import java.util.Random;
 
+import com.example.demo.web.exceptions.UserNotFoundException;
+import com.example.demo.dao.UserRepository;
+import com.example.demo.models.dto.User;
+import com.example.demo.service.user.UserService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,19 +16,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-class UserController {
+public class UserController {
 
     private final UserRepository repository;
+    private final UserService userService;
 
-    UserController(UserRepository repository) {
+    UserController(UserRepository repository, UserService userService) {
         this.repository = repository;
+        this.userService = userService;
     }
 
 
     // Aggregate root
     // tag::get-aggregate-root[]
     @GetMapping("/users")
+
+
     List<User> all() {
+        userService.getAll();
         return repository.findAll();
     }
     // end::get-aggregate-root[]

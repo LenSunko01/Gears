@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.models.dto;
 
 import java.util.Objects;
 
@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-class User {
+public class User {
 
     private @Id @GeneratedValue Long id;
     private String name;
@@ -15,7 +15,7 @@ class User {
 
     User() {}
 
-    User(String name, Long points) {
+    public User(String name, Long points) {
         this.name = name;
         this.points = points;
     }
