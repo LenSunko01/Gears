@@ -2,9 +2,11 @@ package com.example.demo.service.user;
 
 import com.example.demo.models.dto.User;
 import com.example.demo.dao.UserRepository;
+import com.example.demo.web.exceptions.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -17,7 +19,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        return null;
+        return repository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    @Override
+    public User getRandomUser() {
+        List<User> list = repository.findAll();
+        Random rand = new Random();
+        return list.get(rand.nextInt(list.size()));
+    }
+
+    @Override
+    public User addUser(User newUser) {
+        return repository.save(newUser);
     }
 
     @Override
@@ -26,12 +41,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(Long id, User user) {
-
+    public User updateOrCreateUser(Long id, User newUser) {
+        return repository.findById(id)
+                .map(user -> {
+                    user.setName(newUser.getName());
+                    user.setPoints(newUser.getPoints());
+                    return repository.save(user);
+                })
+                .orElseGet(() -> {
+                    newUser.setId(id);
+                    return repository.save(newUser);
+                });
     }
 
     @Override
     public void deleteUserById(Long id) {
-
+        repository.deleteById(id);
     }
 }
