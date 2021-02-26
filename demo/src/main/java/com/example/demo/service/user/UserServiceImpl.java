@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Long id, User newUser) {
+    public User updateOrCreateUser(Long id, User newUser) {
         return repository.findById(id)
                 .map(user -> {
                     user.setName(newUser.getName());
