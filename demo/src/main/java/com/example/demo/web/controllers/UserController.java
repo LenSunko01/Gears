@@ -17,12 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UserController {
-
-    private final UserRepository repository;
     private final UserService userService;
 
-    UserController(UserRepository repository, UserService userService) {
-        this.repository = repository;
+    UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -30,52 +27,35 @@ public class UserController {
     // Aggregate root
     // tag::get-aggregate-root[]
     @GetMapping("/users")
-
-
     List<User> all() {
-        userService.getAll();
-        return repository.findAll();
+        return userService.getAll();
     }
     // end::get-aggregate-root[]
 
     @GetMapping("/random")
     User randomUser() {
-        List<User> list = repository.findAll();
-        Random rand = new Random();
-        return list.get(rand.nextInt(list.size()));
+        return userService.getRandomUser();
     }
 
     @PostMapping("/users")
     User newUser(@RequestBody User newUser) {
-        return repository.save(newUser);
+        return userService.addUser(newUser);
     }
 
     // Single item
 
     @GetMapping("/users/{id}")
     User one(@PathVariable Long id) {
-
-        return repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        return userService.getUserById(id);
     }
 
     @PutMapping("/users/{id}")
     User replaceUser(@RequestBody User newUser, @PathVariable Long id) {
-
-        return repository.findById(id)
-                .map(user -> {
-                    user.setName(newUser.getName());
-                    user.setPoints(newUser.getPoints());
-                    return repository.save(user);
-                })
-                .orElseGet(() -> {
-                    newUser.setId(id);
-                    return repository.save(newUser);
-                });
+        return userService.updateUser(id, newUser);
     }
 
     @DeleteMapping("/users/{id}")
     void deleteUser(@PathVariable Long id) {
-        repository.deleteById(id);
+        userService.deleteUserById(id);
     }
 }
