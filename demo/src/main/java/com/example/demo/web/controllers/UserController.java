@@ -51,7 +51,7 @@ public class UserController {
 
     @PutMapping("/users/{id}")
     User replaceUser(@RequestBody User newUser, @PathVariable Long id) {
-        return userService.replaceUser(id, newUser);
+        return userService.updateUser(id, newUser);
     }
 
     @DeleteMapping("/users/{id}")
