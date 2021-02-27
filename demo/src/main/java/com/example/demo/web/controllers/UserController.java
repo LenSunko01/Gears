@@ -50,8 +50,8 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    User updateOrCreateUser(@RequestBody User newUser, @PathVariable Long id) {
-        return userService.updateOrCreateUser(id, newUser);
+    User replaceUser(@RequestBody User newUser, @PathVariable Long id) {
+        return userService.replaceUser(id, newUser);
     }
 
     @DeleteMapping("/users/{id}")
