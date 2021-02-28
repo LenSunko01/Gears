@@ -41,17 +41,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateOrCreateUser(Long id, User newUser) {
+    public User updateUser(Long id, User newUser) {
         return repository.findById(id)
                 .map(user -> {
                     user.setName(newUser.getName());
                     user.setPoints(newUser.getPoints());
                     return repository.save(user);
                 })
-                .orElseGet(() -> {
-                    newUser.setId(id);
-                    return repository.save(newUser);
-                });
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Override
