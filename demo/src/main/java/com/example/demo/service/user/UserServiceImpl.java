@@ -1,7 +1,7 @@
 package com.example.demo.service.user;
 
 import com.example.demo.models.dto.User;
-import com.example.demo.dao.UserRepository;
+import com.example.demo.dao.user.UserRepository;
 import com.example.demo.web.exceptions.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
