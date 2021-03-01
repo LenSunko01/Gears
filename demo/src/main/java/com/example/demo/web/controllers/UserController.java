@@ -1,10 +1,7 @@
 package com.example.demo.web.controllers;
 
 import java.util.List;
-import java.util.Random;
 
-import com.example.demo.web.exceptions.UserNotFoundException;
-import com.example.demo.dao.UserRepository;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.user.UserService;
 import org.springframework.web.bind.annotation.DeleteMapping;
