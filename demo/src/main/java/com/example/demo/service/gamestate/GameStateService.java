@@ -9,6 +9,6 @@ public interface GameStateService {
     GameState getStateById(Long id);
     GameState getStateByUserId(Long id);
     List<GameState> getAll();
-    Long generateGameId();
-    void setGame(Long idGame, Long idUserOne, Long idUserSecond, GameState game);
+    GameState saveGameState(GameState game);
+    void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond);
 }

@@ -9,8 +9,7 @@ public class GameState {
     int scoreOfSecondPlayer;
 
 
-    public GameState(Long id, List<User> users) {
-        this.id = id;
+    public GameState(List<User> users) {
         scoreOfFirstPlayer = 0;
         scoreOfSecondPlayer = 0;
         numberOfActiveGear = (int) ((Math.random() * (5)));

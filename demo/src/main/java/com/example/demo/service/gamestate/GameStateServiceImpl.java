@@ -2,45 +2,42 @@ package com.example.demo.service.gamestate;
 
 import com.example.demo.dao.gamestate.GameStateDaoImpl;
 import com.example.demo.models.dto.GameState;
-import com.example.demo.models.dto.User;
-import com.example.demo.service.user.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class GameStateServiceImpl implements GameStateService {
 
-    private final GameStateDaoImpl gameStateHolder;
+    private final GameStateDaoImpl gameStateRepository;
 
     public GameStateServiceImpl(GameStateDaoImpl gameStateDao) {
-        this.gameStateHolder = gameStateDao;
+        this.gameStateRepository = gameStateDao;
     }
 
     @Override
     public GameState getStateById(Long id) {
-        return gameStateHolder.getStateById(id);
+        return gameStateRepository.getStateById(id);
     }
 
     @Override
     public GameState getStateByUserId(Long id) {
-        return gameStateHolder.getStateByUserId(id);
+        return gameStateRepository.getStateByUserId(id);
     }
 
     @Override
     public List<GameState> getAll() {
-        return gameStateHolder.getAll();
+        return gameStateRepository.getAll();
     }
 
     @Override
-    public Long generateGameId() {
-        return gameStateHolder.generateGameId();
+    public GameState saveGameState(GameState game) {
+        return gameStateRepository.saveGameState(game);
     }
 
     @Override
-    public void setGame(Long idGame, Long idUserOne, Long idUserSecond, GameState game) {
-        gameStateHolder.setGame(idGame, idUserOne, idUserSecond, game);
+    public void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond) {
+        gameStateRepository.addPlayersToGame(idGame, idUserOne, idUserSecond);
     }
 
 }

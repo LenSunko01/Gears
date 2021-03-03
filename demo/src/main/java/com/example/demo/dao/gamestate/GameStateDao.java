@@ -7,8 +7,7 @@ import java.util.List;
 public interface GameStateDao {
     GameState getStateById(Long id);
     GameState getStateByUserId(Long id);
-    GameState saveStateGame(GameState game);
+    GameState saveGameState(GameState game);
     List<GameState> getAll();
-    void setGame(Long idGame, Long idUserOne, Long idUserSecond, GameState game);
-    Long generateGameId();
+    void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond);
 }

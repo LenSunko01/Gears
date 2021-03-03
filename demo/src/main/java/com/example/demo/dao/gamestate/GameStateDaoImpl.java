@@ -31,7 +31,7 @@ public class GameStateDaoImpl implements GameStateDao {
     }
 
     @Override
-    public GameState saveStateGame(GameState game) {
+    public GameState saveGameState(GameState game) {
         long id = generateGameId();
         game.setId(id);
         gameStateStorage.put(game.getId(), game);
@@ -43,14 +43,15 @@ public class GameStateDaoImpl implements GameStateDao {
         return new ArrayList<>(gameStateStorage.values());
     }
 
+
     @Override
-    public void setGame(Long idGame, Long idUserOne, Long idUserSecond, GameState game) {
+    public void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond) {
         usersToGame.put(idUserOne,idGame);
         usersToGame.put(idUserSecond,idGame);
-        gameStateStorage.put(idGame, game);
     }
-    @Override
-    public Long generateGameId() {
+
+
+    private Long generateGameId() {
         long id = new Random().nextLong();
         while (gameStateStorage.containsKey(id)) {
             id = new Random().nextLong();
