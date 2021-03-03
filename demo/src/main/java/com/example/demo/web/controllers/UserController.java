@@ -66,7 +66,7 @@ public class UserController {
 
 
     @GetMapping("/users/{id}")
-    DeferredResult<User> one(@PathVariable Long id) {
+    DeferredResult<User> getUser(@PathVariable Long id) {
         logger.info("Received get user by ID request");
         DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
 
@@ -88,25 +88,25 @@ public class UserController {
         var entries = this.usersReadyToPlay.entrySet();
 
         for (Iterator<Map.Entry<DeferredResult<User>, User>> it = entries.iterator(); it.hasNext(); ) {
-            var firstUser = it.next();
-            Map.Entry<DeferredResult<User>, User> secondUser;
+            var firstUserEntry = it.next();
+            Map.Entry<DeferredResult<User>, User> secondUserEntry;
 
             if (!it.hasNext()) {
                 break;
             } else {
-                secondUser = it.next();
+                secondUserEntry = it.next();
             }
 
-            firstUser.getKey().setResult(secondUser.getValue());
-            secondUser.getKey().setResult(firstUser.getValue());
+            firstUserEntry.getKey().setResult(secondUserEntry.getValue());
+            secondUserEntry.getKey().setResult(firstUserEntry.getValue());
 
             // TODO: create new game with given users
-            userService.addUser(firstUser.getValue());
-            userService.addUser(secondUser.getValue());
+            userService.addUser(firstUserEntry.getValue());
+            userService.addUser(secondUserEntry.getValue());
         }
     }
 
-    @PostMapping("/users")
+    @PostMapping("/user")
     DeferredResult<User> newUser(@RequestBody User newUser) {
         final DeferredResult<User> result = new DeferredResult<>(5L, new OpponentNotFoundException());
 

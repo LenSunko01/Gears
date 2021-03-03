@@ -1,7 +1,6 @@
 package com.example.demo.web.controllers;
 
 import com.example.demo.models.dto.GameState;
-import com.example.demo.models.dto.User;
 import com.example.demo.service.gamestate.GameStateService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
