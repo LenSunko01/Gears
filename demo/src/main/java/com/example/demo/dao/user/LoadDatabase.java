@@ -24,7 +24,7 @@ public class LoadDatabase {
     private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
     @Bean
-    CommandLineRunner initDatabase(UserRepository repository, GameStateDao gameStateDao) {
+    CommandLineRunner initDatabase(UserRepository repository,GameService gameService) {
 
         return args -> {
             log.info("Preloading " + repository.save(new User("Player X", 87L)));
@@ -36,15 +36,7 @@ public class LoadDatabase {
             User testUser1 = repository.save(new User("Test 1", 101L));
             User testUser2 = repository.save(new User("Test 2", 202L));
 
-            UserService user = new UserServiceImpl(repository);
-            GameStateDaoImpl impl = new GameStateDaoImpl();
-            GameStateService service = new GameStateServiceImpl(impl);
-            GameService gameService = new GameServiceImpl(service, user);
             gameService.setGame(testUser1,testUser2);
-           // GameStateRecord record = new GameStateRecord(List.of(testUser1.getId(), testUser2.getId()));
-
-          //  record = gameStateRecordDao.saveStateGame(record);
-
             log.info("LOAD GAMESTATE with id " + gameService.setGame(testUser1,testUser2));
 
         };

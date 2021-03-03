@@ -4,6 +4,7 @@ import com.example.demo.models.dto.GameState;
 
 import java.util.List;
 
+
 public interface GameStateDao {
     GameState getStateById(Long id);
     GameState getStateByUserId(Long id);

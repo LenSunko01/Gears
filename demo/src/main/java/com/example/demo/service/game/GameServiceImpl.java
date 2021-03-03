@@ -4,10 +4,12 @@ import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.user.UserService;
+import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 
+@Service
 public class GameServiceImpl implements GameService {
     private final GameStateService gameStateService;
     private final UserService userService;
