@@ -87,15 +87,10 @@ public class UserController {
 
         var entries = this.usersReadyToPlay.entrySet();
 
-        for (Iterator<Map.Entry<DeferredResult<User>, User>> it = entries.iterator(); it.hasNext(); ) {
+        while (entries.size() > 1) {
+            Iterator<Map.Entry<DeferredResult<User>, User>> it = entries.iterator();
             var firstUserEntry = it.next();
-            Map.Entry<DeferredResult<User>, User> secondUserEntry;
-
-            if (!it.hasNext()) {
-                break;
-            } else {
-                secondUserEntry = it.next();
-            }
+            var secondUserEntry = it.next();
 
             firstUserEntry.getKey().setResult(secondUserEntry.getValue());
             secondUserEntry.getKey().setResult(firstUserEntry.getValue());
@@ -103,6 +98,9 @@ public class UserController {
             // TODO: create new game with given users
             userService.addUser(firstUserEntry.getValue());
             userService.addUser(secondUserEntry.getValue());
+
+            usersReadyToPlay.remove(firstUserEntry.getKey());
+            usersReadyToPlay.remove(secondUserEntry.getKey());
         }
     }
 
