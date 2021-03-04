@@ -4,15 +4,15 @@ import java.util.List;
 
 public class GameState {
     private Long id;   // think out how to generate :)
-    private List<User> users;
+    int numberOfActiveGear;
+    int scoreOfFirstPlayer;
+    int scoreOfSecondPlayer;
+
 
     public GameState(List<User> users) {
-        this.users = users;
-    }
-
-    public GameState(Long id, List<User> users) {
-        this.id = id;
-        this.users = users;
+        scoreOfFirstPlayer = 0;
+        scoreOfSecondPlayer = 0;
+        numberOfActiveGear = (int) ((Math.random() * (5)));
     }
 
     public Long getId() {
@@ -23,11 +23,30 @@ public class GameState {
         this.id = id;
     }
 
-    public List<User> getUsers() {
-        return users;
+    public void setNumberOfActiveGear(int numberOfActiveGear) {
+        this.numberOfActiveGear = numberOfActiveGear;
     }
 
-    public void setUsers(List<User> users) {
-        this.users = users;
+    public void setScoreOfFirstPlayer(int scoreOfFirstPlayer) {
+        this.scoreOfFirstPlayer = scoreOfFirstPlayer;
     }
+
+    public void setScoreOfSecondPlayer(int scoreOfSecondPlayer) {
+        this.scoreOfSecondPlayer = scoreOfSecondPlayer;
+    }
+
+
+    public int getNumberOfActiveGear() {
+        return numberOfActiveGear;
+    }
+
+    public int getScoreOfFirstPlayer() {
+        return scoreOfFirstPlayer;
+    }
+
+    public int getScoreOfSecondPlayer() {
+        return scoreOfSecondPlayer;
+    }
+
+
 }

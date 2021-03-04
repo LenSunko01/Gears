@@ -1,51 +1,43 @@
 package com.example.demo.service.gamestate;
 
-import com.example.demo.dao.gamestate.dto.GameStateRecord;
+import com.example.demo.dao.gamestate.GameStateDaoImpl;
 import com.example.demo.models.dto.GameState;
-import com.example.demo.models.dto.User;
-import com.example.demo.service.gamestaterecord.GameStateRecordService;
-import com.example.demo.service.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GameStateServiceImpl implements GameStateService {
 
-    private final UserService userService;
-    private final GameStateRecordService gameStateRecordService;
+    private final GameStateDaoImpl gameStateRepository;
 
-    public GameStateServiceImpl(UserService userService, GameStateRecordService gameStateRecordService) {
-        this.userService = userService;
-        this.gameStateRecordService = gameStateRecordService;
+    public GameStateServiceImpl(GameStateDaoImpl gameStateDao) {
+        this.gameStateRepository = gameStateDao;
     }
 
     @Override
     public GameState getStateById(Long id) {
-        //get record
-        GameStateRecord record = gameStateRecordService.getById(id);
-        List<User> users = getUsers(record);
-        return new GameState(id, users);
+        return gameStateRepository.getStateById(id);
     }
 
     @Override
     public GameState getStateByUserId(Long id) {
-        GameStateRecord record = gameStateRecordService.getByUserId(id);
-        List<User> users = getUsers(record);
-        return new GameState(id, users);
+        return gameStateRepository.getStateByUserId(id);
     }
 
     @Override
     public List<GameState> getAll() {
-        List<GameStateRecord>  records = gameStateRecordService.getAll();
-        return records.stream()
-                .map(record -> new GameState(record.getId(), getUsers(record)))
-                .collect(Collectors.toList());
+        return gameStateRepository.getAll();
     }
 
-    private List<User> getUsers(GameStateRecord record) {
-        return record.getUserIds().stream()
-                .map(userService::getUserById).collect(Collectors.toList());
+    @Override
+    public GameState saveGameState(GameState game) {
+        return gameStateRepository.saveGameState(game);
     }
+
+    @Override
+    public void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond) {
+        gameStateRepository.addPlayersToGame(idGame, idUserOne, idUserSecond);
+    }
+
 }

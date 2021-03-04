@@ -1,14 +1,14 @@
-package com.example.demo.service.gamestate;
+package com.example.demo.dao.gamestate;
 
 import com.example.demo.models.dto.GameState;
-import com.example.demo.models.dto.User;
 
 import java.util.List;
 
-public interface GameStateService {
+
+public interface GameStateDao {
     GameState getStateById(Long id);
     GameState getStateByUserId(Long id);
-    List<GameState> getAll();
     GameState saveGameState(GameState game);
+    List<GameState> getAll();
     void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond);
 }
