@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
+import com.example.demo.config.LongPollingConfig;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.game.GameService;
 import com.example.demo.service.user.UserService;
@@ -25,13 +26,16 @@ public class UserController {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final UserService userService;
     private final GameService gameService;
+    private LongPollingConfig longPollingConfig;
+
     // Key is user who wants to play, value is his future opponent
     private final Map<DeferredResult<User>, User> usersReadyToPlay =
             new ConcurrentHashMap<>();
 
-    UserController(UserService userService, GameService gameService) {
+    UserController(UserService userService, GameService gameService, LongPollingConfig longPollingConfig) {
         this.userService = userService;
         this.gameService = gameService;
+        this.longPollingConfig = longPollingConfig;
     }
 
 
@@ -107,7 +111,7 @@ public class UserController {
 
     @PostMapping("/user")
     DeferredResult<User> newUser(@RequestBody User newUser) {
-        final DeferredResult<User> result = new DeferredResult<>(null, new OpponentNotFoundException());
+        final DeferredResult<User> result = new DeferredResult<>(longPollingConfig.getTimeOut(), new OpponentNotFoundException());
 
         this.usersReadyToPlay.put(result, newUser);
 
