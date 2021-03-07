@@ -6,18 +6,14 @@ import java.util.concurrent.ForkJoinPool;
 
 import com.example.demo.models.dto.User;
 import com.example.demo.service.game.GameService;
+import com.example.demo.service.login.LoginService;
+import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
 import com.example.demo.web.exceptions.OpponentNotFoundException;
 import com.example.demo.web.exceptions.UserNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 @RestController
@@ -25,13 +21,22 @@ public class UserController {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final UserService userService;
     private final GameService gameService;
+    private final RegistrationService registerService;
+    private final LoginService loginService;
     // Key is user who wants to play, value is his future opponent
     private final Map<DeferredResult<User>, User> usersReadyToPlay =
             new ConcurrentHashMap<>();
 
-    UserController(UserService userService, GameService gameService) {
+    UserController(
+            UserService userService,
+            GameService gameService,
+            RegistrationService registerService,
+            LoginService loginService
+    ) {
         this.userService = userService;
         this.gameService = gameService;
+        this.registerService = registerService;
+        this.loginService = loginService;
     }
 
 
@@ -51,6 +56,25 @@ public class UserController {
         return output;
     }
 
+    @GetMapping("/register")
+    public String registerUser(@RequestParam String username, @RequestParam String password) {
+        return registerService.registerUser(username, password);
+    }
+
+    @GetMapping("/login")
+    public String loginUser(@RequestParam String username, @RequestParam String password) {
+        return loginService.loginUser(username, password);
+    }
+
+    @GetMapping("/get-users-info")
+    public Map<String, String> getUsersInfo() {
+        return userService.getAllUsersInfo();
+    }
+
+    @GetMapping("/get-active-users")
+    public Map<String, User> getActiveUsers() {
+        return userService.getActiveUsers();
+    }
 
     @GetMapping("/random")
     DeferredResult<User> randomUser() {

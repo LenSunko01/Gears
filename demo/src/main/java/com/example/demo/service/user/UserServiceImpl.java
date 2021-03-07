@@ -1,20 +1,31 @@
 package com.example.demo.service.user;
 
+import com.example.demo.dao.activeusers.ActiveUsersDao;
+import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
 import com.example.demo.dao.user.UserRepository;
 import com.example.demo.web.exceptions.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
+    private final ActiveUsersDao activeUsers;
+    private final AllUsersDao allUsers;
 
-    public UserServiceImpl(UserRepository repository) {
+    public UserServiceImpl(
+            UserRepository repository,
+            ActiveUsersDao activeUsers,
+            AllUsersDao allUsers
+    ) {
         this.repository = repository;
+        this.activeUsers = activeUsers;
+        this.allUsers = allUsers;
     }
 
     @Override
@@ -55,4 +66,15 @@ public class UserServiceImpl implements UserService {
     public void deleteUserById(Long id) {
         repository.deleteById(id);
     }
+
+    @Override
+    public Map<String, User> getActiveUsers() {
+        return activeUsers.getActiveUsers();
+    }
+
+    @Override
+    public Map<String, String> getAllUsersInfo() {
+        return allUsers.getAll();
+    }
+
 }
