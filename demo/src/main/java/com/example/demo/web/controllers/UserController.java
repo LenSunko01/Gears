@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
 import com.example.demo.models.dto.User;
+import com.example.demo.service.game.GameService;
 import com.example.demo.service.user.UserService;
 import com.example.demo.web.exceptions.OpponentNotFoundException;
 import com.example.demo.web.exceptions.UserNotFoundException;
@@ -23,12 +24,14 @@ import org.springframework.web.context.request.async.DeferredResult;
 public class UserController {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final UserService userService;
+    private final GameService gameService;
     // Key is user who wants to play, value is his future opponent
     private final Map<DeferredResult<User>, User> usersReadyToPlay =
             new ConcurrentHashMap<>();
 
-    UserController(UserService userService) {
+    UserController(UserService userService, GameService gameService) {
         this.userService = userService;
+        this.gameService = gameService;
     }
 
 
@@ -95,9 +98,7 @@ public class UserController {
             firstUserEntry.getKey().setResult(secondUserEntry.getValue());
             secondUserEntry.getKey().setResult(firstUserEntry.getValue());
 
-            // TODO: create new game with given users
-            userService.addUser(firstUserEntry.getValue());
-            userService.addUser(secondUserEntry.getValue());
+            gameService.setGame(firstUserEntry.getValue(), secondUserEntry.getValue());
 
             usersReadyToPlay.remove(firstUserEntry.getKey());
             usersReadyToPlay.remove(secondUserEntry.getKey());
@@ -106,7 +107,7 @@ public class UserController {
 
     @PostMapping("/user")
     DeferredResult<User> newUser(@RequestBody User newUser) {
-        final DeferredResult<User> result = new DeferredResult<>(5L, new OpponentNotFoundException());
+        final DeferredResult<User> result = new DeferredResult<>(null, new OpponentNotFoundException());
 
         this.usersReadyToPlay.put(result, newUser);
 
