@@ -1,5 +1,6 @@
 package com.example.demo.web.controllers;
 
+import com.example.demo.config.LongPollingConfig;
 import com.example.demo.models.dto.GameState;
 import com.example.demo.service.gamestate.GameStateService;
 import org.apache.commons.logging.Log;
@@ -17,9 +18,11 @@ import java.util.concurrent.ForkJoinPool;
 public class GameStateController {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final GameStateService gameStateService;
+    private LongPollingConfig longPollingConfig;
 
-    public GameStateController(GameStateService gameStateService) {
+    public GameStateController(GameStateService gameStateService, LongPollingConfig longPollingConfig) {
         this.gameStateService = gameStateService;
+        this.longPollingConfig = longPollingConfig;
     }
 
     @GetMapping("/games")

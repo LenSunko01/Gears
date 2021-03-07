@@ -1,0 +1,4 @@
+gears:
+  web:
+    timeout: 100
+
