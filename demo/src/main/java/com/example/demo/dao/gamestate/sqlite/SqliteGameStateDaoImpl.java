@@ -137,11 +137,13 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
             insertGameStateStmt = conn.prepareStatement(INSERT_USER);
 
-            insertGameStateStmt.setLong(1, idGame);
-            insertGameStateStmt.setLong(2, idUserOne);
+            insertGameStateStmt.setLong(1, idUserOne);
+            insertGameStateStmt.setLong(2, idGame);
 
-            insertGameStateStmt.setLong(1, idGame);
-            insertGameStateStmt.setLong(2, idUserSecond);
+            insertGameStateStmt.execute();
+
+            insertGameStateStmt.setLong(1, idUserSecond);
+            insertGameStateStmt.setLong(2, idGame);
 
             insertGameStateStmt.execute();
 

@@ -36,7 +36,6 @@ public class LoadDatabase {
             User testUser1 = repository.save(new User("Test 1", 101L));
             User testUser2 = repository.save(new User("Test 2", 202L));
 
-            gameService.setGame(testUser1, testUser2);
 
             log.info("LOAD GAMESTATE with id " + gameService.setGame(testUser1, testUser2));
 
