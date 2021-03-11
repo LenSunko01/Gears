@@ -8,8 +8,14 @@ public class GameState {
     int scoreOfFirstPlayer;
     int scoreOfSecondPlayer;
 
+    public GameState(Long id, int numberOfActiveGear, int scoreOfFirstPlayer, int scoreOfSecondPlayer) {
+        this.id = id;
+        this.numberOfActiveGear = numberOfActiveGear;
+        this.scoreOfFirstPlayer = scoreOfFirstPlayer;
+        this.scoreOfSecondPlayer = scoreOfSecondPlayer;
+    }
 
-    public GameState(List<User> users) {
+    public GameState() {
         scoreOfFirstPlayer = 0;
         scoreOfSecondPlayer = 0;
         numberOfActiveGear = (int) ((Math.random() * (5)));
@@ -48,5 +54,13 @@ public class GameState {
         return scoreOfSecondPlayer;
     }
 
-
+    @Override
+    public String toString() {
+        return "GameState{" +
+                "id=" + id +
+                ", numberOfActiveGear=" + numberOfActiveGear +
+                ", scoreOfFirstPlayer=" + scoreOfFirstPlayer +
+                ", scoreOfSecondPlayer=" + scoreOfSecondPlayer +
+                '}';
+    }
 }

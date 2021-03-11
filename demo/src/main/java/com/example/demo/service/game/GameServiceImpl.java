@@ -27,7 +27,7 @@ public class GameServiceImpl implements GameService {
         long idFirstPlayer = firstUserWithGeneratedID.getId();
         long idSecondPlayer = secondUserWithGeneratedID.getId();
         List<User> users = Arrays.asList(firstUserWithGeneratedID, secondUserWithGeneratedID);
-        GameState bufferGame = new GameState(users);
+        GameState bufferGame = new GameState();
 
         GameState newGame = gameStateService.saveGameState(bufferGame);
         long idGame = newGame.getId();
