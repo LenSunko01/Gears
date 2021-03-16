@@ -40,7 +40,6 @@ public class UserController {
     }
 
 
-    // get all users who are currently playing (not waiting to play)
     @GetMapping("/users")
     DeferredResult<List<User>> all() {
         logger.info("Received get all users request");
@@ -71,9 +70,9 @@ public class UserController {
         return userService.getAllUsersInfo();
     }
 
-    @GetMapping("/get-active-users")
+    @GetMapping("/get-users-tokens")
     public Map<String, User> getActiveUsers() {
-        return userService.getActiveUsers();
+        return userService.getUsersTokens();
     }
 
     @GetMapping("/random")
@@ -105,6 +104,11 @@ public class UserController {
 
         logger.info("Thread freed");
         return output;
+    }
+
+    @GetMapping("/logout")
+    void logoutUser(@RequestParam String token) {
+        loginService.logoutUser(token);
     }
 
     private void matchOpponents() {

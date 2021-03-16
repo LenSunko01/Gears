@@ -1,6 +1,5 @@
 package com.example.demo.service.user;
 
-import com.example.demo.dao.activeusers.ActiveUsersDao;
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
 import com.example.demo.dao.user.UserRepository;
@@ -15,16 +14,13 @@ import java.util.Random;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final ActiveUsersDao activeUsers;
     private final AllUsersDao allUsers;
 
     public UserServiceImpl(
             UserRepository repository,
-            ActiveUsersDao activeUsers,
             AllUsersDao allUsers
     ) {
         this.repository = repository;
-        this.activeUsers = activeUsers;
         this.allUsers = allUsers;
     }
 
@@ -68,13 +64,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, User> getActiveUsers() {
-        return activeUsers.getActiveUsers();
+    public Map<String, User> getUsersTokens() {
+        return allUsers.getUsersTokens();
     }
 
     @Override
     public Map<String, String> getAllUsersInfo() {
-        return allUsers.getAll();
+        return allUsers.getAllUsersInfo();
     }
 
 }

@@ -18,7 +18,9 @@ public interface UserService {
 
     void deleteUserById(Long id);
 
-    Map<String, User> getActiveUsers();
+    // returns all token-user information
+    Map<String, User> getUsersTokens();
 
+    // returns all login-password information
     Map<String, String> getAllUsersInfo();
 }

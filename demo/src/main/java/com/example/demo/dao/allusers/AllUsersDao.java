@@ -10,9 +10,17 @@ public interface AllUsersDao {
 
     boolean checkUsernameExists(String username);
 
-    User addUser(String username, String password);
+    User addUser(String username, String password, String token);
 
     boolean checkPassword(String username, String password);
 
-    Map<String, String> getAll();
+    Map<String, String> getAllUsersInfo();
+
+    Map<String, User> getUsersTokens();
+
+    boolean checkTokenExists(String token);
+
+    boolean removeToken(String token);
+
+    boolean addToken(String token, User user);
 }
