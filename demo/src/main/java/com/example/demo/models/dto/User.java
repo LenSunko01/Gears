@@ -6,17 +6,19 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Entity
 public class User {
 
-    private @Id @GeneratedValue Long id;
-    private String name;
+    private Long id;
+    private String username;
+    private String password;
     private Long points;
 
-    User() {}
+    public User() {}
 
-    public User(String name, Long points) {
-        this.name = name;
+    public User(Long id, String login, String password, Long points) {
+        this.id = id;
+        this.username = login;
+        this.password = password;
         this.points = points;
     }
 
@@ -24,8 +26,8 @@ public class User {
         return this.id;
     }
 
-    public String getName() {
-        return this.name;
+    public String getUsername() {
+        return this.username;
     }
 
     public Long getPoints() {
@@ -36,8 +38,8 @@ public class User {
         this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setPoints(Long points) {
@@ -52,19 +54,30 @@ public class User {
         if (!(o instanceof User))
             return false;
         User user = (User) o;
-        return Objects.equals(this.id, user.id) && Objects.equals(this.name, user.name)
+        return Objects.equals(this.id, user.id) && Objects.equals(this.username, user.username)
+                && Objects.equals(this.password, user.password)
                 && Objects.equals(this.points, user.points);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id, this.name, this.points);
+        return Objects.hash(this.id, this.username,
+                this.password, this.points);
     }
 
     @Override
     public String toString() {
         return "Employee{" + "id=" + this.id +
-                ", name='" + this.name + '\'' +
+                ", username='" + this.username + '\'' +
+                ", password='" + this.password + '\'' +
                 ", points='" + this.points + '\'' + '}';
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

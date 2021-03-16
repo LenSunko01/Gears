@@ -4,8 +4,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
+import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.game.GameService;
+import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
@@ -23,6 +25,7 @@ public class UserController {
     private final GameService gameService;
     private final RegistrationService registerService;
     private final LoginService loginService;
+    private final GameStateService gameStateService;
     // Key is user who wants to play, value is his future opponent
     private final Map<DeferredResult<User>, User> usersReadyToPlay =
             new ConcurrentHashMap<>();
@@ -31,23 +34,40 @@ public class UserController {
             UserService userService,
             GameService gameService,
             RegistrationService registerService,
-            LoginService loginService
+            LoginService loginService,
+            GameStateService gameStateService
     ) {
         this.userService = userService;
         this.gameService = gameService;
         this.registerService = registerService;
         this.loginService = loginService;
+        this.gameStateService = gameStateService;
     }
 
 
     @GetMapping("/users")
-    DeferredResult<List<User>> all() {
+    DeferredResult<List<User>> getAllUsers() {
         logger.info("Received get all users request");
         DeferredResult<List<User>> output = new DeferredResult<>(5L, Collections.emptyList());
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             List<User> list = userService.getAll();
+            output.setResult(list);
+        });
+
+        logger.info("Thread freed");
+        return output;
+    }
+
+    @GetMapping("/games")
+    DeferredResult<List<GameState>> all() {
+        logger.info("Received get all games request");
+        DeferredResult<List<GameState>> output = new DeferredResult<>(5L, Collections.emptyList());
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            List<GameState> list = gameStateService.getAll();
             output.setResult(list);
         });
 
@@ -63,16 +83,6 @@ public class UserController {
     @GetMapping("/login")
     public String loginUser(@RequestParam String username, @RequestParam String password) {
         return loginService.loginUser(username, password);
-    }
-
-    @GetMapping("/get-users-info")
-    public Map<String, String> getUsersInfo() {
-        return userService.getAllUsersInfo();
-    }
-
-    @GetMapping("/get-users-tokens")
-    public Map<String, User> getActiveUsers() {
-        return userService.getUsersTokens();
     }
 
     @GetMapping("/random")
@@ -106,11 +116,6 @@ public class UserController {
         return output;
     }
 
-    @GetMapping("/logout")
-    void logoutUser(@RequestParam String token) {
-        loginService.logoutUser(token);
-    }
-
     private void matchOpponents() {
         if (this.usersReadyToPlay.size() < 2) {
             return;
@@ -142,7 +147,6 @@ public class UserController {
         result.onCompletion(() -> usersReadyToPlay.remove(result));
 
         result.onTimeout(() -> usersReadyToPlay.remove(result));
-
         matchOpponents();
         return result;
     }
@@ -154,7 +158,11 @@ public class UserController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            User user = userService.updateUser(id, newUser);
+            User prevUser = userService.getUserById(id);
+            var prevUsername = prevUser.getUsername();
+            User user = userService.updatePassword(prevUsername, newUser.getPassword());
+            user = userService.updatePoints(prevUsername, newUser.getPoints());
+            user = userService.updateUsername(prevUsername, newUser.getUsername());
             output.setResult(user);
         });
 
@@ -162,9 +170,15 @@ public class UserController {
         return output;
     }
 
-    @DeleteMapping("/users/{id}")
-    void deleteUser(@PathVariable Long id) {
+    @DeleteMapping("/users/{name}")
+    void deleteUser(@PathVariable String name) {
         logger.info("Received delete user request");
-        userService.deleteUserById(id);
+        userService.deleteUser(name);
+    }
+
+    @DeleteMapping("/game/{id}")
+    void deleteGame(@PathVariable Long id) {
+        logger.info("Received delete game request");
+        gameStateService.deleteGame(id);
     }
 }

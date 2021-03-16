@@ -39,6 +39,11 @@ public class GameStateDaoImpl implements GameStateDao {
     }
 
     @Override
+    public void deleteGame(GameState game) {
+        usersToGame.entrySet().removeIf(entry -> entry.getKey().equals(game.getId()));
+    }
+
+    @Override
     public List<GameState> getAll() {
         return new ArrayList<>(gameStateStorage.values());
     }

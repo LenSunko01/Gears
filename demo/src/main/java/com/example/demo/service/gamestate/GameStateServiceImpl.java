@@ -1,7 +1,6 @@
 package com.example.demo.service.gamestate;
 
 import com.example.demo.dao.gamestate.GameStateDao;
-import com.example.demo.dao.gamestate.GameStateDaoImpl;
 import com.example.demo.models.dto.GameState;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,12 @@ public class GameStateServiceImpl implements GameStateService {
     @Override
     public GameState getStateByUserId(Long id) {
         return gameStateRepository.getStateByUserId(id);
+    }
+
+    @Override
+    public void deleteGame(Long id) {
+        var game = gameStateRepository.getStateById(id);
+        gameStateRepository.deleteGame(game);
     }
 
     @Override

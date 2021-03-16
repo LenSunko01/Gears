@@ -10,17 +10,13 @@ public interface UserService {
 
     User getRandomUser();
 
-    User addUser(User newUser);
-
     List<User> getAll();
 
-    User updateUser(Long id, User user);
+    User updateUsername(String username, String newUsername);
 
-    void deleteUserById(Long id);
+    User updatePassword(String username, String newPassword);
 
-    // returns all token-user information
-    Map<String, User> getUsersTokens();
+    User updatePoints(String username, Long newPoints);
 
-    // returns all login-password information
-    Map<String, String> getAllUsersInfo();
+    void deleteUser(String username);
 }

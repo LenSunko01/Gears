@@ -14,13 +14,23 @@ public interface AllUsersDao {
 
     boolean checkPassword(String username, String password);
 
-    Map<String, String> getAllUsersInfo();
-
-    Map<String, User> getUsersTokens();
-
     boolean checkTokenExists(String token);
 
-    boolean removeToken(String token);
+    boolean updateToken(String token, User user);
 
-    boolean addToken(String token, User user);
+    User getUserById(Long id);
+
+    List<User> getAll();
+
+    String getTokenByUsername(String username);
+
+    User getUserByToken(String token);
+
+    User updateUsernameById(Long id, String newUsername);
+
+    User updatePasswordById(Long id, String newPassword);
+
+    User updatePointsById(Long id, Long newPoints);
+
+    boolean deleteUser(String username);
 }

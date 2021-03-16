@@ -34,9 +34,4 @@ public class TokenServiceImpl implements TokenService {
         }
         return token;
     }
-
-    @Override
-    public boolean deleteToken(String token) {
-        return allUsers.removeToken(token);
-    }
 }

@@ -9,14 +9,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class LoginServiceImpl implements LoginService {
     private final AllUsersDao allUsers;
-    private final TokenService tokenService;
 
-    public LoginServiceImpl(
-            AllUsersDao allUsers,
-            TokenService tokenService
-    ) {
+    public LoginServiceImpl(AllUsersDao allUsers) {
         this.allUsers = allUsers;
-        this.tokenService = tokenService;
     }
 
     @Override
@@ -30,15 +25,6 @@ public class LoginServiceImpl implements LoginService {
             throw new InvalidPasswordException("Incorrect password");
         }
 
-        var token = tokenService.generateNewToken();
-        var user = allUsers.getUserByUsername(username);
-        allUsers.addToken(token, user);
-
-        return token;
-    }
-
-    @Override
-    public void logoutUser(String token) {
-        allUsers.removeToken(token);
+        return allUsers.getTokenByUsername(username);
     }
 }

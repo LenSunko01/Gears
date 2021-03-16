@@ -29,17 +29,19 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
     private static String INSERT_USER = "insert into user_to_game(user_id, game_id) values (?, ?)";
 
+    private static String DELETE_GAME = "delete from game_state where id=?";
+
+    private static String DELETE_GAME_USER_TO_GAME = "delete from user_to_game where game_id=?";
+
     Connection conn;
 
-    @PostConstruct
-    void initConnection() {
-        this.conn = SqliteUtils.connect(DB_FILE_NAME);
+    public SqliteGameStateDaoImpl(SqliteUtils utils) {
+        this.conn = utils.getConnection(DB_FILE_NAME);
     }
-
 
     @Override
     public GameState getStateById(Long id) {
-        PreparedStatement getGameStateStatement = null;
+        PreparedStatement getGameStateStatement;
         try {
             getGameStateStatement = conn.prepareStatement(GET_STATE_BY_STATE_ID);
 
@@ -61,7 +63,7 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
     @Override
     public GameState getStateByUserId(Long id) {
-        PreparedStatement getGameStateStatement = null;
+        PreparedStatement getGameStateStatement;
         try {
             getGameStateStatement = conn.prepareStatement(GET_STATE_BY_USER_ID);
 
@@ -88,7 +90,7 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
     @Override
     public GameState saveGameState(GameState game) {
-        PreparedStatement insertGameStateStmt = null;
+        PreparedStatement insertGameStateStmt;
         try {
 
             insertGameStateStmt = conn.prepareStatement(INSERT_GAME_STATE);
@@ -99,9 +101,7 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
             insertGameStateStmt.execute();
             ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return this.getStateById(rs.getLong(1));
-
-
+            return getStateById(rs.getLong(1));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -111,14 +111,13 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
     @Override
     public List<GameState> getAll() {
-        PreparedStatement getAllGameStatesStmt = null;
+        PreparedStatement getAllGameStatesStmt;
         List<GameState> states = new ArrayList<>();
         try {
             getAllGameStatesStmt = conn.prepareStatement(GET_ALL_STATES);
             ResultSet rs = getAllGameStatesStmt.executeQuery();
             while (rs.next()) {
-                states.add(getGameState(rs)
-                );
+                states.add(getGameState(rs));
             }
 
             return states;
@@ -151,5 +150,22 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void deleteGame(GameState game) {
+        Long id = game.getId();
+        PreparedStatement insertGameStateStmt = null;
+        try {
+            insertGameStateStmt = conn.prepareStatement(DELETE_GAME);
+            insertGameStateStmt.setLong(1, id);
+            insertGameStateStmt.execute();
+
+            insertGameStateStmt = conn.prepareStatement(DELETE_GAME_USER_TO_GAME);
+            insertGameStateStmt.setLong(1, id);
+            insertGameStateStmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
