@@ -1,58 +1,61 @@
 package com.example.demo.service.user;
 
+import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
-import com.example.demo.dao.user.UserRepository;
 import com.example.demo.web.exceptions.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository repository;
+    private final AllUsersDao allUsers;
 
-    public UserServiceImpl(UserRepository repository) {
-        this.repository = repository;
+    public UserServiceImpl(AllUsersDao allUsers) {
+        this.allUsers = allUsers;
     }
 
     @Override
     public User getUserById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        return allUsers.getUserById(id);
     }
 
     @Override
     public User getRandomUser() {
-        List<User> list = repository.findAll();
+        List<User> list = allUsers.getAll();
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
     }
 
     @Override
-    public User addUser(User newUser) {
-        return repository.save(newUser);
-    }
-
-    @Override
     public List<User> getAll() {
-        return repository.findAll();
+        return allUsers.getAll();
     }
 
     @Override
-    public User updateUser(Long id, User newUser) {
-        return repository.findById(id)
-                .map(user -> {
-                    user.setName(newUser.getName());
-                    user.setPoints(newUser.getPoints());
-                    return repository.save(user);
-                })
-                .orElseThrow(() -> new UserNotFoundException(id));
+    public User updateUsername(String username, String newUsername) {
+        var id = allUsers.getUserByUsername(username).getId();
+        return allUsers.updateUsernameById(id, newUsername);
     }
 
     @Override
-    public void deleteUserById(Long id) {
-        repository.deleteById(id);
+    public User updatePassword(String username, String newPassword) {
+        var id = allUsers.getUserByUsername(username).getId();
+        return allUsers.updatePasswordById(id, newPassword);
     }
+
+    @Override
+    public User updatePoints(String username, Long newPoints) {
+        var id = allUsers.getUserByUsername(username).getId();
+        return allUsers.updatePointsById(id, newPoints);
+    }
+
+    @Override
+    public void deleteUser(String username) {
+        allUsers.deleteUser(username);
+    }
+
 }

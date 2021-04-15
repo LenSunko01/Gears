@@ -3,17 +3,20 @@ package com.example.demo.service.user;
 import com.example.demo.models.dto.User;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     User getUserById(Long id);
 
     User getRandomUser();
 
-    User addUser(User newUser);
-
     List<User> getAll();
 
-    User updateUser(Long id, User user);
+    User updateUsername(String username, String newUsername);
 
-    void deleteUserById(Long id);
+    User updatePassword(String username, String newPassword);
+
+    User updatePoints(String username, Long newPoints);
+
+    void deleteUser(String username);
 }
