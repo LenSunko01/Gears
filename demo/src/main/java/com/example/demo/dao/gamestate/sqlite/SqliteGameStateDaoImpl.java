@@ -82,9 +82,8 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
     private GameState getGameState(ResultSet rs) throws SQLException {
         return new GameState(
                 rs.getLong("id"),
-                rs.getInt("gear"),
-                rs.getInt("first_score"),
-                rs.getInt("second_score")
+                rs.getLong("first_score"),
+                rs.getLong("second_score")
         );
     }
 
@@ -95,9 +94,9 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
 
             insertGameStateStmt = conn.prepareStatement(INSERT_GAME_STATE);
 
-            insertGameStateStmt.setInt(1, game.getNumberOfActiveGear());
-            insertGameStateStmt.setInt(2, game.getScoreOfFirstPlayer());
-            insertGameStateStmt.setInt(3, game.getScoreOfSecondPlayer());
+            insertGameStateStmt.setInt(1, 5);
+            insertGameStateStmt.setLong(2, game.getScoreOfFirstPlayer());
+            insertGameStateStmt.setLong(3, game.getScoreOfSecondPlayer());
 
             insertGameStateStmt.execute();
             ResultSet rs = insertGameStateStmt.getGeneratedKeys();

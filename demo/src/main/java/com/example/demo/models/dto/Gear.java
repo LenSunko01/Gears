@@ -43,7 +43,7 @@ public class Gear {
     protected class Hole {
         private final int capacity;
         private int degree;
-
+        private boolean isFree = true;
         public Hole() {
             capacity = 1;
             degree = 0;
@@ -59,6 +59,14 @@ public class Gear {
 
         public void setDegree(int degree) {
             this.degree = degree % 360;
+        }
+
+        public boolean isFree() {
+            return isFree;
+        }
+
+        public void setFree(boolean free) {
+            isFree = free;
         }
     }
 }

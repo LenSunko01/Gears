@@ -24,11 +24,11 @@ public class LoadDatabase {
     ) {
 
         return args -> {
-            log.info("Preloading " + registrationService.registerUser("Player X9", "123qwerty"));
-            log.info("Preloading " + registrationService.registerUser("Player Y9", "54321"));
-            log.info("Preloading " + registrationService.registerUser("Player Z9", "dogdog"));
-            log.info("Preloading " + registrationService.registerUser("Player M9", "catcat"));
-            log.info("Preloading " + registrationService.registerUser("Player N9", "noyes"));
+            log.info("Preloading " + registrationService.registerUser("Player X22229", "123qwerty"));
+            log.info("Preloading " + registrationService.registerUser("Player Y92222", "54321"));
+            log.info("Preloading " + registrationService.registerUser("Player Z92222", "dogdog"));
+            log.info("Preloading " + registrationService.registerUser("Player M9222", "catcat"));
+            log.info("Preloading " + registrationService.registerUser("Player N9222", "noyes"));
 
             var allUsers = userService.getAll();
             User testUser1 = allUsers.get(0);
