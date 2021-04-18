@@ -54,16 +54,6 @@ public class UserController {
         return output;
     }
 
-    @GetMapping("/register")
-    public String registerUser(@RequestParam String username, @RequestParam String password) {
-        return registerService.registerUser(username, password);
-    }
-
-    @GetMapping("/login")
-    public String loginUser(@RequestParam String username, @RequestParam String password) {
-        return loginService.loginUser(username, password);
-    }
-
     @GetMapping("/random")
     DeferredResult<Map.Entry<String, Long>> randomUser() {
         logger.info("Received random user request");
@@ -79,6 +69,15 @@ public class UserController {
         return output;
     }
 
+    @PostMapping("/register")
+    public Map.Entry<String, Long> registerUser(@RequestParam String username, @RequestParam String password) {
+        return registerService.registerUser(username, password);
+    }
+
+    @GetMapping("/login")
+    public Map.Entry<String, Long> loginUser(@RequestParam String username, @RequestParam String password) {
+        return loginService.loginUser(username, password);
+    }
 
     @GetMapping("/get-user/{id}")
     DeferredResult<User> getUser(@PathVariable Long id) {

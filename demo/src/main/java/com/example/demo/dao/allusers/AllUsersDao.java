@@ -37,5 +37,7 @@ public interface AllUsersDao {
 
     User updatePointsByUsername(String username, Long newPoints);
 
-    boolean updateToken(String token, User user);
+    boolean updateToken(String token, String username);
+
+    Long getIdByUsername(String username);
 }

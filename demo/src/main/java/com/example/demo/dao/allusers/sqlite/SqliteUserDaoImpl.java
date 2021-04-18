@@ -25,6 +25,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
 
     private static final String GET_TOKEN_BY_USERNAME = "select user_token from user_state where user_login = ?";
 
+    private static final String GET_ID_BY_USERNAME = "select id from user_state where user_login = ?";
+
     private static final String GET_USER_BY_TOKEN = "select * from user_state where user_token = ?";
 
     private static final String INSERT_USER = "insert into user_state(user_login, user_password, " +
@@ -288,18 +290,32 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public boolean updateToken(String token, User user) {
+    public boolean updateToken(String token, String username) {
         PreparedStatement updateTokenStmt;
         try {
             updateTokenStmt = conn.prepareStatement(INSERT_TOKEN_BY_USERNAME);
             updateTokenStmt.setString(1, token);
-            updateTokenStmt.setString(2, user.getUsername());
+            updateTokenStmt.setString(2, username);
             updateTokenStmt.execute();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public Long getIdByUsername(String username) {
+        PreparedStatement getUserStmt;
+        try {
+            getUserStmt = conn.prepareStatement(GET_ID_BY_USERNAME);
+            getUserStmt.setString(1, username);
+            ResultSet rs = getUserStmt.executeQuery();
+            return rs.getLong("id");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

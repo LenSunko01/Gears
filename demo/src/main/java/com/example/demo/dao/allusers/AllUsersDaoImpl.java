@@ -13,6 +13,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
     Map<String, User> tokenToUser = new HashMap<>();
     Map<User, String> userToToken = new HashMap<>();
     Map<Long, User> idToUser = new HashMap<>();
+    Map<User, Long> userToId = new HashMap<>();
 
     private Long count = 0L;
 
@@ -37,7 +38,8 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public boolean updateToken(String token, User user) {
+    public boolean updateToken(String token, String username) {
+        var user = usernameToUser.get(username);
         if (!userToToken.containsKey(user)) {
             return false;
         }
@@ -46,6 +48,11 @@ public class AllUsersDaoImpl implements AllUsersDao {
         tokenToUser.put(token, user);
         userToToken.replace(user, token);
         return true;
+    }
+
+    @Override
+    public Long getIdByUsername(String username) {
+        return userToId.get(usernameToUser.get(username));
     }
 
     @Override
@@ -76,6 +83,23 @@ public class AllUsersDaoImpl implements AllUsersDao {
         return tokenToUser.get(token);
     }
 
+    private void updateUser(User user, User newUser) {
+        userToUsername.remove(user);
+        userToUsername.put(newUser, newUser.getUsername());
+        usernameToUser.remove(user.getUsername());
+        usernameToUser.put(newUser.getUsername(), newUser);
+
+        var token = userToToken.get(user);
+        userToToken.remove(user);
+        userToToken.put(newUser, token);
+        tokenToUser.replace(token, newUser);
+
+        userToId.remove(user);
+        userToId.put(newUser, newUser.getId());
+        idToUser.remove(user.getId());
+        idToUser.put(newUser.getId(), newUser);
+    }
+
     @Override
     public User updateUsernameById(Long id, String newUsername) {
         var prevUsername = userToUsername.get(idToUser.get(id));
@@ -87,11 +111,10 @@ public class AllUsersDaoImpl implements AllUsersDao {
         usernameToPassword.put(newUsername, password);
 
         var user = usernameToUser.get(prevUsername);
-        userToUsername.replace(user, newUsername);
-
-        usernameToUser.remove(prevUsername);
-        usernameToUser.put(newUsername, user);
-        return user;
+        var newUser = new User(user);
+        newUser.setUsername(newUsername);
+        updateUser(user, newUser);
+        return newUser;
     }
 
     @Override
@@ -111,7 +134,10 @@ public class AllUsersDaoImpl implements AllUsersDao {
             return null;
         }
         usernameToPassword.replace(username, newPassword);
-        return user;
+        var newUser = new User(user);
+        user.setPassword(newPassword);
+        updateUser(user, newUser);
+        return newUser;
     }
 
     @Override
@@ -128,16 +154,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
         }
         var newUser = new User(user);
         newUser.setPoints(newPoints);
-        usernameToUser.replace(user.getUsername(), newUser);
-        userToUsername.remove(user);
-        userToUsername.put(newUser, user.getUsername());
-
-        var token = userToToken.get(user);
-        tokenToUser.replace(token, newUser);
-        userToToken.remove(user);
-        userToToken.put(newUser, token);
-
-        idToUser.replace(id, newUser);
+        updateUser(user, newUser);
         return newUser;
     }
 
@@ -160,6 +177,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
         tokenToUser.put(token, user);
         userToToken.put(user, token);
         idToUser.put(user.getId(), user);
+        userToId.put(user, user.getId());
         return user;
     }
 
