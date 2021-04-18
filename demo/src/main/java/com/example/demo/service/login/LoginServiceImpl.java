@@ -1,7 +1,6 @@
 package com.example.demo.service.login;
 
 import com.example.demo.dao.allusers.AllUsersDao;
-import com.example.demo.service.token.TokenService;
 import com.example.demo.web.exceptions.InvalidUsernameException;
 import com.example.demo.web.exceptions.InvalidPasswordException;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class LoginServiceImpl implements LoginService {
                     "I think you made a typo. Or you're just messing with me (please don't)");
         }
 
-        if (!allUsers.checkPassword(username, password)) {
+        if (!allUsers.checkPasswordIsCorrect(username, password)) {
             throw new InvalidPasswordException("Incorrect password");
         }
 

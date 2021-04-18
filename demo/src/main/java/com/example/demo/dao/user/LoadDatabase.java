@@ -24,7 +24,7 @@ public class LoadDatabase {
     ) {
 
         return args -> {
-            log.info("Preloading " + registrationService.registerUser("Player X22229", "123qwerty"));
+            /*log.info("Preloading " + registrationService.registerUser("Player X22229", "123qwerty"));
             log.info("Preloading " + registrationService.registerUser("Player Y92222", "54321"));
             log.info("Preloading " + registrationService.registerUser("Player Z92222", "dogdog"));
             log.info("Preloading " + registrationService.registerUser("Player M9222", "catcat"));
@@ -35,7 +35,7 @@ public class LoadDatabase {
             User testUser2 = allUsers.get(1);
 
 
-            log.info("LOAD GAMESTATE with id " + gameService.setGame(testUser1, testUser2));
+            log.info("LOAD GAMESTATE with id " + gameService.setGame(testUser1, testUser2));*/
         };
     }
 }

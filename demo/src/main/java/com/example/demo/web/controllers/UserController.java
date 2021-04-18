@@ -60,21 +60,6 @@ public class UserController {
         return output;
     }
 
-    @GetMapping("/games")
-    DeferredResult<List<GameState>> all() {
-        logger.info("Received get all games request");
-        DeferredResult<List<GameState>> output = new DeferredResult<>(5L, Collections.emptyList());
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            List<GameState> list = gameStateService.getAll();
-            output.setResult(list);
-        });
-
-        logger.info("Thread freed");
-        return output;
-    }
-
     @GetMapping("/register")
     public String registerUser(@RequestParam String username, @RequestParam String password) {
         return registerService.registerUser(username, password);
@@ -101,7 +86,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/get-user/{id}")
     DeferredResult<User> getUser(@PathVariable Long id) {
         logger.info("Received get user by ID request");
         DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
@@ -131,14 +116,15 @@ public class UserController {
             firstUserEntry.getKey().setResult(secondUserEntry.getValue());
             secondUserEntry.getKey().setResult(firstUserEntry.getValue());
 
-            gameService.setGame(firstUserEntry.getValue(), secondUserEntry.getValue());
-
             usersReadyToPlay.remove(firstUserEntry.getKey());
             usersReadyToPlay.remove(secondUserEntry.getKey());
         }
     }
 
-    @PostMapping("/user")
+    /*
+    matches opponents but does not create a game
+     */
+    @PostMapping("/find-opponent")
     DeferredResult<User> newUser(@RequestBody User newUser) {
         final DeferredResult<User> result = new DeferredResult<>(null, new OpponentNotFoundException());
 
@@ -151,18 +137,14 @@ public class UserController {
         return result;
     }
 
-    @PutMapping("/users/{id}")
-    DeferredResult<User> updateUser(@RequestBody User newUser, @PathVariable Long id) {
-        logger.info("Received update user request");
+    @PutMapping("/update-username")
+    DeferredResult<User> updateUsername(@RequestParam String newUsername, @RequestParam Long id) {
+        logger.info("Received update username request");
         DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            User prevUser = userService.getUserById(id);
-            var prevUsername = prevUser.getUsername();
-            User user = userService.updatePassword(prevUsername, newUser.getPassword());
-            user = userService.updatePoints(prevUsername, newUser.getPoints());
-            user = userService.updateUsername(prevUsername, newUser.getUsername());
+            var user = userService.updateUsername(id, newUsername);
             output.setResult(user);
         });
 
@@ -170,15 +152,33 @@ public class UserController {
         return output;
     }
 
-    @DeleteMapping("/users/{name}")
-    void deleteUser(@PathVariable String name) {
-        logger.info("Received delete user request");
-        userService.deleteUser(name);
+    @PutMapping("/update-password")
+    DeferredResult<User> updatePassword(@RequestParam String newPassword, @RequestParam Long id) {
+        logger.info("Received update password request");
+        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            var user = userService.updatePassword(id, newPassword);
+            output.setResult(user);
+        });
+
+        logger.info("Thread freed");
+        return output;
     }
 
-    @DeleteMapping("/game/{id}")
-    void deleteGame(@PathVariable Long id) {
-        logger.info("Received delete game request");
-        gameStateService.deleteGame(id);
+    @PutMapping("/update-points")
+    DeferredResult<User> updatePoints(@RequestParam Long newPoints, @RequestParam Long id) {
+        logger.info("Received update points request");
+        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            var user = userService.updatePoints(id, newPoints);
+            output.setResult(user);
+        });
+
+        logger.info("Thread freed");
+        return output;
     }
 }

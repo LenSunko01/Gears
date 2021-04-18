@@ -2,11 +2,9 @@ package com.example.demo.service.user;
 
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
-import com.example.demo.web.exceptions.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Random;
 
 @Service
@@ -25,14 +23,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getRandomUser() {
-        List<User> list = allUsers.getAll();
+        ArrayList<User> list = allUsers.getAll();
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
     }
 
     @Override
-    public List<User> getAll() {
+    public ArrayList<User> getAll() {
         return allUsers.getAll();
+    }
+
+    @Override
+    public User updateUsername(Long id, String newUsername) {
+        return allUsers.updateUsernameById(id, newUsername);
+    }
+
+    @Override
+    public User updatePassword(Long id, String newPassword) {
+        return allUsers.updatePasswordById(id, newPassword);
+    }
+
+    @Override
+    public User updatePoints(Long id, Long newPoints) {
+        return allUsers.updatePointsById(id, newPoints);
     }
 
     @Override
@@ -52,10 +65,4 @@ public class UserServiceImpl implements UserService {
         var id = allUsers.getUserByUsername(username).getId();
         return allUsers.updatePointsById(id, newPoints);
     }
-
-    @Override
-    public void deleteUser(String username) {
-        allUsers.deleteUser(username);
-    }
-
 }
