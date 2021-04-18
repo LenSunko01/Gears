@@ -12,6 +12,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Repository
@@ -122,14 +124,14 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public ArrayList<User> getAll() {
+    public Map<String, Long> getAll() {
         PreparedStatement getAllUsersStmt;
-        ArrayList<User> users = new ArrayList<>();
+        Map<String, Long> users = new HashMap<>();
         try {
             getAllUsersStmt = conn.prepareStatement(GET_ALL_USERS);
             ResultSet rs = getAllUsersStmt.executeQuery();
             while (rs.next()) {
-                users.add(getUserByQuery(rs));
+                users.put(rs.getString("user_login"), rs.getLong("points"));
             }
             return users;
         } catch (SQLException e) {

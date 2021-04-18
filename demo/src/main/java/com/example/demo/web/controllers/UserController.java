@@ -22,37 +22,31 @@ import org.springframework.web.context.request.async.DeferredResult;
 public class UserController {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final UserService userService;
-    private final GameService gameService;
     private final RegistrationService registerService;
     private final LoginService loginService;
-    private final GameStateService gameStateService;
     // Key is user who wants to play, value is his future opponent
     private final Map<DeferredResult<User>, User> usersReadyToPlay =
             new ConcurrentHashMap<>();
 
     UserController(
             UserService userService,
-            GameService gameService,
             RegistrationService registerService,
-            LoginService loginService,
-            GameStateService gameStateService
+            LoginService loginService
     ) {
         this.userService = userService;
-        this.gameService = gameService;
         this.registerService = registerService;
         this.loginService = loginService;
-        this.gameStateService = gameStateService;
     }
 
 
     @GetMapping("/users")
-    DeferredResult<List<User>> getAllUsers() {
+    DeferredResult<Map<String, Long>> getAllUsers() {
         logger.info("Received get all users request");
-        DeferredResult<List<User>> output = new DeferredResult<>(5L, Collections.emptyList());
+        DeferredResult<Map<String, Long>> output = new DeferredResult<>(5L, Collections.emptyList());
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            List<User> list = userService.getAll();
+            var list = userService.getAll();
             output.setResult(list);
         });
 
@@ -71,13 +65,13 @@ public class UserController {
     }
 
     @GetMapping("/random")
-    DeferredResult<User> randomUser() {
+    DeferredResult<Map.Entry<String, Long>> randomUser() {
         logger.info("Received random user request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException());
+        DeferredResult<Map.Entry<String, Long>> output = new DeferredResult<>(5L, new UserNotFoundException());
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            User user = userService.getRandomUser();
+            var user = userService.getRandomUser();
             output.setResult(user);
         });
 

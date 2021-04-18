@@ -21,7 +21,7 @@ public interface AllUsersDao {
 
     User getUserByToken(String token);
 
-    ArrayList<User> getAll();
+    Map<String, Long> getAll();
 
     String getTokenByUsername(String username);
 

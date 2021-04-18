@@ -54,8 +54,12 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public ArrayList<User> getAll() {
-        return new ArrayList<>(idToUser.values());
+    public Map<String, Long> getAll() {
+        Map<String, Long> users= new HashMap<>();
+        for (var user : idToUser.values()) {
+            users.put(user.getUsername(), user.getPoints());
+        }
+        return users;
     }
 
     @Override

@@ -4,8 +4,7 @@ import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -22,14 +21,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getRandomUser() {
-        ArrayList<User> list = allUsers.getAll();
+    public Map.Entry<String, Long> getRandomUser() {
+        Map<String, Long> map = allUsers.getAll();
+        var list = new ArrayList<>(map.entrySet());
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
     }
 
     @Override
-    public ArrayList<User> getAll() {
+    public Map<String, Long> getAll() {
         return allUsers.getAll();
     }
 

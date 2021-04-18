@@ -3,13 +3,13 @@ package com.example.demo.service.user;
 import com.example.demo.models.dto.User;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public interface UserService {
     User getUserById(Long id);
+    Map.Entry<String, Long> getRandomUser();
 
-    User getRandomUser();
-
-    ArrayList<User> getAll();
+    Map<String, Long> getAll();
 
     User updateUsername(Long id, String newUsername);
 
