@@ -2,6 +2,7 @@ package com.example.demo.service.user;
 
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
+import com.example.demo.web.exceptions.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,8 +17,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long id) {
-        return allUsers.getUserById(id);
+    public User getUserById(Long id, String token) {
+        var user = allUsers.getUserById(id);
+        var username = user.getUsername();
+        var correctToken = allUsers.getTokenByUsername(username);
+        if (!correctToken.equals(token)) {
+            throw new AuthenticationException();
+        }
+        return user;
     }
 
     @Override

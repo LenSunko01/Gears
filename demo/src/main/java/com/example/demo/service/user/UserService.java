@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public interface UserService {
-    User getUserById(Long id);
+    User getUserById(Long id, String token);
     Map.Entry<String, Long> getRandomUser();
 
     Map<String, Long> getAll();
