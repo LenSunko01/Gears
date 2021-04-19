@@ -2,6 +2,7 @@ package com.example.demo.service.user;
 
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
+import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.web.exceptions.AuthenticationException;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +12,11 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
 
     private final AllUsersDao allUsers;
+    private final RegistrationService registrationService;
 
-    public UserServiceImpl(AllUsersDao allUsers) {
+    public UserServiceImpl(AllUsersDao allUsers, RegistrationService registrationService) {
         this.allUsers = allUsers;
+        this.registrationService = registrationService;
     }
 
     @Override
@@ -42,11 +45,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUsername(Long id, String newUsername) {
+        registrationService.checkLoginIsValid(newUsername);
         return allUsers.updateUsernameById(id, newUsername);
     }
 
     @Override
     public User updatePassword(Long id, String newPassword) {
+        registrationService.checkPasswordIsValid(newPassword);
         return allUsers.updatePasswordById(id, newPassword);
     }
 
@@ -57,12 +62,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUsername(String username, String newUsername) {
+        registrationService.checkLoginIsValid(newUsername);
         var id = allUsers.getUserByUsername(username).getId();
         return allUsers.updateUsernameById(id, newUsername);
     }
 
     @Override
     public User updatePassword(String username, String newPassword) {
+        registrationService.checkPasswordIsValid(newPassword);
         var id = allUsers.getUserByUsername(username).getId();
         return allUsers.updatePasswordById(id, newPassword);
     }

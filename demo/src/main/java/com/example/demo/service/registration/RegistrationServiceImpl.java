@@ -32,7 +32,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         return new AbstractMap.SimpleEntry<>(token, allUsers.getIdByUsername(username));
     }
 
-    private void checkLoginIsValid(String username) {
+    public void checkLoginIsValid(String username) {
         if (username.length() == 0) {
             throw new InvalidUsernameException("Login can not be an empty string");
         }
@@ -42,7 +42,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
     }
 
-    private void checkPasswordIsValid(String password) {
+    public void checkPasswordIsValid(String password) {
         if (password.length() == 0) {
             throw new InvalidPasswordException("Seriously? Empty password? I thought better about you");
         }

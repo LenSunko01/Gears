@@ -11,9 +11,7 @@ import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
-import com.example.demo.web.exceptions.AuthenticationException;
-import com.example.demo.web.exceptions.OpponentNotFoundException;
-import com.example.demo.web.exceptions.UserNotFoundException;
+import com.example.demo.web.exceptions.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.bind.annotation.*;
@@ -138,12 +136,16 @@ public class UserController {
     @PutMapping("/update-username")
     DeferredResult<User> updateUsername(@RequestParam String newUsername, @RequestParam Long id) {
         logger.info("Received update username request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+        DeferredResult<User> output = new DeferredResult<>(100L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            var user = userService.updateUsername(id, newUsername);
-            output.setResult(user);
+            try {
+                var user = userService.updateUsername(id, newUsername);
+                output.setResult(user);
+            } catch (InvalidUsernameException e) {
+                output.setErrorResult(e);
+            }
         });
 
         logger.info("Thread freed");
@@ -157,8 +159,12 @@ public class UserController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            var user = userService.updatePassword(id, newPassword);
-            output.setResult(user);
+            try {
+                var user = userService.updatePassword(id, newPassword);
+                output.setResult(user);
+            } catch (InvalidPasswordException e) {
+                output.setErrorResult(e);
+            }
         });
 
         logger.info("Thread freed");

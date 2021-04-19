@@ -3,7 +3,12 @@ package com.example.demo.dao.allusers.sqlite;
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
 import com.example.demo.utils.SqliteUtils;
+import com.example.demo.web.controllers.UserController;
+import com.example.demo.web.exceptions.InvalidUsernameException;
 import com.example.demo.web.exceptions.UserNotFoundException;
+import net.bytebuddy.pool.TypePool;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -161,20 +166,20 @@ public class SqliteUserDaoImpl implements AllUsersDao {
         PreparedStatement getUserStmt;
         try {
             getUserStmt = conn.prepareStatement(GET_USER_BY_TOKEN);
-
             getUserStmt.setString(1, token);
             ResultSet rs = getUserStmt.executeQuery();
             return getUserByQuery(rs);
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
     @Override
     public User updateUsernameById(Long id, String newUsername) {
+        if (checkUsernameExists(newUsername)) {
+            throw new InvalidUsernameException("User with provided username already exists");
+        }
         PreparedStatement insertGameStateStmt;
         try {
             insertGameStateStmt = conn.prepareStatement(INSERT_USERNAME_BY_ID);
@@ -182,8 +187,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt.setLong(2, id);
 
             insertGameStateStmt.execute();
-            ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return getUserById(rs.getLong(1));
+            return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -193,6 +197,9 @@ public class SqliteUserDaoImpl implements AllUsersDao {
 
     @Override
     public User updateUsernameByUsername(String prevUsername, String newUsername) {
+        if (checkUsernameExists(newUsername)) {
+            throw new InvalidUsernameException("User with provided username already exists");
+        }
         PreparedStatement insertGameStateStmt;
         try {
             insertGameStateStmt = conn.prepareStatement(INSERT_USERNAME_BY_USERNAME);
@@ -201,8 +208,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt.setString(2, prevUsername);
 
             insertGameStateStmt.execute();
-            ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return getUserById(rs.getLong(1));
+            return getUserByUsername(newUsername);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -217,10 +223,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt = conn.prepareStatement(INSERT_PASSWORD_BY_ID);
             insertGameStateStmt.setString(1, newPassword);
             insertGameStateStmt.setLong(2, id);
-
             insertGameStateStmt.execute();
-            ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return getUserById(rs.getLong(1));
+            return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -235,8 +239,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt.setString(1, newPassword);
             insertGameStateStmt.setString(2, username);
             insertGameStateStmt.execute();
-            ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return getUserById(rs.getLong(1));
+            return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -251,8 +254,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt.setLong(1, newPoints);
             insertGameStateStmt.setLong(2, id);
             insertGameStateStmt.execute();
-            ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return getUserById(rs.getLong(1));
+            return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -267,8 +269,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt.setLong(1, newPoints);
             insertGameStateStmt.setString(2, username);
             insertGameStateStmt.execute();
-            ResultSet rs = insertGameStateStmt.getGeneratedKeys();
-            return getUserById(rs.getLong(1));
+            return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -291,6 +292,9 @@ public class SqliteUserDaoImpl implements AllUsersDao {
 
     @Override
     public boolean updateToken(String token, String username) {
+        if (checkTokenExists(token)) {
+            throw new IllegalArgumentException("User with provided token already exists");
+        }
         PreparedStatement updateTokenStmt;
         try {
             updateTokenStmt = conn.prepareStatement(INSERT_TOKEN_BY_USERNAME);
