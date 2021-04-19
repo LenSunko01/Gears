@@ -11,15 +11,15 @@ public interface UserService {
 
     Map<String, Long> getAll();
 
-    User updateUsername(Long id, String newUsername);
+    User updateUsername(Long id, String newUsername, String token);
 
-    User updatePassword(Long id, String newPassword);
+    User updatePassword(Long id, String newPassword, String token);
 
-    User updatePoints(Long id, Long newPoints);
+    User updatePoints(Long id, Long newPoints, String token);
 
-    User updateUsername(String username, String newUsername);
+    User updateUsername(String username, String newUsername, String token);
 
-    User updatePassword(String password, String newPassword);
+    User updatePassword(String password, String newPassword, String token);
 
-    User updatePoints(String username, Long newPoints);
+    User updatePoints(String username, Long newPoints, String token);
 }

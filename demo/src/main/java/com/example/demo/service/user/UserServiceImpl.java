@@ -19,15 +19,19 @@ public class UserServiceImpl implements UserService {
         this.registrationService = registrationService;
     }
 
-    @Override
-    public User getUserById(Long id, String token) {
+    private void checkTokenIsCorrect(Long id, String token) {
         var user = allUsers.getUserById(id);
         var username = user.getUsername();
         var correctToken = allUsers.getTokenByUsername(username);
         if (!correctToken.equals(token)) {
             throw new AuthenticationException();
         }
-        return user;
+    }
+
+    @Override
+    public User getUserById(Long id, String token) {
+        checkTokenIsCorrect(id, token);
+        return allUsers.getUserById(id);
     }
 
     @Override
@@ -44,39 +48,45 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUsername(Long id, String newUsername) {
+    public User updateUsername(Long id, String newUsername, String token) {
+        checkTokenIsCorrect(id, token);
         registrationService.checkLoginIsValid(newUsername);
         return allUsers.updateUsernameById(id, newUsername);
     }
 
     @Override
-    public User updatePassword(Long id, String newPassword) {
+    public User updatePassword(Long id, String newPassword, String token) {
+        checkTokenIsCorrect(id, token);
         registrationService.checkPasswordIsValid(newPassword);
         return allUsers.updatePasswordById(id, newPassword);
     }
 
     @Override
-    public User updatePoints(Long id, Long newPoints) {
+    public User updatePoints(Long id, Long newPoints, String token) {
+        checkTokenIsCorrect(id, token);
         return allUsers.updatePointsById(id, newPoints);
     }
 
     @Override
-    public User updateUsername(String username, String newUsername) {
-        registrationService.checkLoginIsValid(newUsername);
+    public User updateUsername(String username, String newUsername, String token) {
         var id = allUsers.getUserByUsername(username).getId();
+        checkTokenIsCorrect(id, token);
+        registrationService.checkLoginIsValid(newUsername);
         return allUsers.updateUsernameById(id, newUsername);
     }
 
     @Override
-    public User updatePassword(String username, String newPassword) {
-        registrationService.checkPasswordIsValid(newPassword);
+    public User updatePassword(String username, String newPassword, String token) {
         var id = allUsers.getUserByUsername(username).getId();
+        checkTokenIsCorrect(id, token);
+        registrationService.checkPasswordIsValid(newPassword);
         return allUsers.updatePasswordById(id, newPassword);
     }
 
     @Override
-    public User updatePoints(String username, Long newPoints) {
+    public User updatePoints(String username, Long newPoints, String token) {
         var id = allUsers.getUserByUsername(username).getId();
+        checkTokenIsCorrect(id, token);
         return allUsers.updatePointsById(id, newPoints);
     }
 }

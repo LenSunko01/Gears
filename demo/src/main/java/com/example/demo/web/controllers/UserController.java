@@ -122,7 +122,7 @@ public class UserController {
      */
     @PostMapping("/find-opponent")
     DeferredResult<String> newUser(@RequestBody String username) {
-        final DeferredResult<String> result = new DeferredResult<>(null, new OpponentNotFoundException());
+        final DeferredResult<String> result = new DeferredResult<>(100L, new OpponentNotFoundException());
 
         this.usersReadyToPlay.put(result, username);
 
@@ -134,16 +134,18 @@ public class UserController {
     }
 
     @PutMapping("/update-username")
-    DeferredResult<User> updateUsername(@RequestParam String newUsername, @RequestParam Long id) {
+    DeferredResult<User> updateUsername(
+            @RequestParam String newUsername, @RequestParam Long id, @RequestParam String token
+    ) {
         logger.info("Received update username request");
-        DeferredResult<User> output = new DeferredResult<>(100L, new UserNotFoundException(id));
+        DeferredResult<User> output = new DeferredResult<>(10L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                var user = userService.updateUsername(id, newUsername);
+                var user = userService.updateUsername(id, newUsername, token);
                 output.setResult(user);
-            } catch (InvalidUsernameException e) {
+            } catch (InvalidUsernameException | AuthenticationException e) {
                 output.setErrorResult(e);
             }
         });
@@ -153,16 +155,18 @@ public class UserController {
     }
 
     @PutMapping("/update-password")
-    DeferredResult<User> updatePassword(@RequestParam String newPassword, @RequestParam Long id) {
+    DeferredResult<User> updatePassword(
+            @RequestParam String newPassword, @RequestParam Long id, @RequestParam String token
+    ) {
         logger.info("Received update password request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+        DeferredResult<User> output = new DeferredResult<>(10L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                var user = userService.updatePassword(id, newPassword);
+                var user = userService.updatePassword(id, newPassword, token);
                 output.setResult(user);
-            } catch (InvalidPasswordException e) {
+            } catch (InvalidPasswordException | AuthenticationException e) {
                 output.setErrorResult(e);
             }
         });
@@ -172,14 +176,20 @@ public class UserController {
     }
 
     @PutMapping("/update-points")
-    DeferredResult<User> updatePoints(@RequestParam Long newPoints, @RequestParam Long id) {
+    DeferredResult<User> updatePoints(
+            @RequestParam Long newPoints, @RequestParam Long id, @RequestParam String token
+    ) {
         logger.info("Received update points request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+        DeferredResult<User> output = new DeferredResult<>(10L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            var user = userService.updatePoints(id, newPoints);
-            output.setResult(user);
+            try {
+                var user = userService.updatePoints(id, newPoints, token);
+                output.setResult(user);
+            } catch (InvalidPasswordException | AuthenticationException e) {
+                output.setErrorResult(e);
+            }
         });
 
         logger.info("Thread freed");
