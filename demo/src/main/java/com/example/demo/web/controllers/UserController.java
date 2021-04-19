@@ -11,8 +11,7 @@ import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
-import com.example.demo.web.exceptions.OpponentNotFoundException;
-import com.example.demo.web.exceptions.UserNotFoundException;
+import com.example.demo.web.exceptions.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.bind.annotation.*;
@@ -22,37 +21,31 @@ import org.springframework.web.context.request.async.DeferredResult;
 public class UserController {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final UserService userService;
-    private final GameService gameService;
     private final RegistrationService registerService;
     private final LoginService loginService;
-    private final GameStateService gameStateService;
     // Key is user who wants to play, value is his future opponent
-    private final Map<DeferredResult<User>, User> usersReadyToPlay =
+    private final Map<DeferredResult<String>, String> usersReadyToPlay =
             new ConcurrentHashMap<>();
 
     UserController(
             UserService userService,
-            GameService gameService,
             RegistrationService registerService,
-            LoginService loginService,
-            GameStateService gameStateService
+            LoginService loginService
     ) {
         this.userService = userService;
-        this.gameService = gameService;
         this.registerService = registerService;
         this.loginService = loginService;
-        this.gameStateService = gameStateService;
     }
 
 
     @GetMapping("/users")
-    DeferredResult<List<User>> getAllUsers() {
+    DeferredResult<Map<String, Long>> getAllUsers() {
         logger.info("Received get all users request");
-        DeferredResult<List<User>> output = new DeferredResult<>(5L, Collections.emptyList());
+        DeferredResult<Map<String, Long>> output = new DeferredResult<>(100L, Collections.emptyList());
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            List<User> list = userService.getAll();
+            var list = userService.getAll();
             output.setResult(list);
         });
 
@@ -60,56 +53,44 @@ public class UserController {
         return output;
     }
 
-    @GetMapping("/games")
-    DeferredResult<List<GameState>> all() {
-        logger.info("Received get all games request");
-        DeferredResult<List<GameState>> output = new DeferredResult<>(5L, Collections.emptyList());
+    @GetMapping("/random")
+    DeferredResult<Map.Entry<String, Long>> randomUser() {
+        logger.info("Received random user request");
+        DeferredResult<Map.Entry<String, Long>> output = new DeferredResult<>(5L, new UserNotFoundException());
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            List<GameState> list = gameStateService.getAll();
-            output.setResult(list);
+            var user = userService.getRandomUser();
+            output.setResult(user);
         });
 
         logger.info("Thread freed");
         return output;
     }
 
-    @GetMapping("/register")
-    public String registerUser(@RequestParam String username, @RequestParam String password) {
+    @PostMapping("/register")
+    public Map.Entry<String, Long> registerUser(@RequestParam String username, @RequestParam String password) {
         return registerService.registerUser(username, password);
     }
 
     @GetMapping("/login")
-    public String loginUser(@RequestParam String username, @RequestParam String password) {
+    public Map.Entry<String, Long> loginUser(@RequestParam String username, @RequestParam String password) {
         return loginService.loginUser(username, password);
     }
 
-    @GetMapping("/random")
-    DeferredResult<User> randomUser() {
-        logger.info("Received random user request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException());
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            User user = userService.getRandomUser();
-            output.setResult(user);
-        });
-
-        logger.info("Thread freed");
-        return output;
-    }
-
-
-    @GetMapping("/users/{id}")
-    DeferredResult<User> getUser(@PathVariable Long id) {
+    @GetMapping("/get-user")
+    DeferredResult<User> getUser(@RequestParam Long id, @RequestParam String token) {
         logger.info("Received get user by ID request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+        DeferredResult<User> output = new DeferredResult<>(100L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            User user = userService.getUserById(id);
-            output.setResult(user);
+            try {
+                User user = userService.getUserById(id, token);
+                output.setResult(user);
+            } catch (AuthenticationException e) {
+                output.setErrorResult(e);
+            }
         });
 
         logger.info("Thread freed");
@@ -124,25 +105,26 @@ public class UserController {
         var entries = this.usersReadyToPlay.entrySet();
 
         while (entries.size() > 1) {
-            Iterator<Map.Entry<DeferredResult<User>, User>> it = entries.iterator();
+            Iterator<Map.Entry<DeferredResult<String>, String>> it = entries.iterator();
             var firstUserEntry = it.next();
             var secondUserEntry = it.next();
 
             firstUserEntry.getKey().setResult(secondUserEntry.getValue());
             secondUserEntry.getKey().setResult(firstUserEntry.getValue());
 
-            gameService.setGame(firstUserEntry.getValue(), secondUserEntry.getValue());
-
             usersReadyToPlay.remove(firstUserEntry.getKey());
             usersReadyToPlay.remove(secondUserEntry.getKey());
         }
     }
 
-    @PostMapping("/user")
-    DeferredResult<User> newUser(@RequestBody User newUser) {
-        final DeferredResult<User> result = new DeferredResult<>(null, new OpponentNotFoundException());
+    /*
+    matches opponents but does not create a game
+     */
+    @PostMapping("/find-opponent")
+    DeferredResult<String> newUser(@RequestBody String username) {
+        final DeferredResult<String> result = new DeferredResult<>(100L, new OpponentNotFoundException());
 
-        this.usersReadyToPlay.put(result, newUser);
+        this.usersReadyToPlay.put(result, username);
 
         result.onCompletion(() -> usersReadyToPlay.remove(result));
 
@@ -151,34 +133,66 @@ public class UserController {
         return result;
     }
 
-    @PutMapping("/users/{id}")
-    DeferredResult<User> updateUser(@RequestBody User newUser, @PathVariable Long id) {
-        logger.info("Received update user request");
-        DeferredResult<User> output = new DeferredResult<>(5L, new UserNotFoundException(id));
+    @PutMapping("/update-username")
+    DeferredResult<User> updateUsername(
+            @RequestParam String newUsername, @RequestParam Long id, @RequestParam String token
+    ) {
+        logger.info("Received update username request");
+        DeferredResult<User> output = new DeferredResult<>(10L, new UserNotFoundException(id));
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
-            User prevUser = userService.getUserById(id);
-            var prevUsername = prevUser.getUsername();
-            User user = userService.updatePassword(prevUsername, newUser.getPassword());
-            user = userService.updatePoints(prevUsername, newUser.getPoints());
-            user = userService.updateUsername(prevUsername, newUser.getUsername());
-            output.setResult(user);
+            try {
+                var user = userService.updateUsername(id, newUsername, token);
+                output.setResult(user);
+            } catch (InvalidUsernameException | AuthenticationException e) {
+                output.setErrorResult(e);
+            }
         });
 
         logger.info("Thread freed");
         return output;
     }
 
-    @DeleteMapping("/users/{name}")
-    void deleteUser(@PathVariable String name) {
-        logger.info("Received delete user request");
-        userService.deleteUser(name);
+    @PutMapping("/update-password")
+    DeferredResult<User> updatePassword(
+            @RequestParam String newPassword, @RequestParam Long id, @RequestParam String token
+    ) {
+        logger.info("Received update password request");
+        DeferredResult<User> output = new DeferredResult<>(10L, new UserNotFoundException(id));
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            try {
+                var user = userService.updatePassword(id, newPassword, token);
+                output.setResult(user);
+            } catch (InvalidPasswordException | AuthenticationException e) {
+                output.setErrorResult(e);
+            }
+        });
+
+        logger.info("Thread freed");
+        return output;
     }
 
-    @DeleteMapping("/game/{id}")
-    void deleteGame(@PathVariable Long id) {
-        logger.info("Received delete game request");
-        gameStateService.deleteGame(id);
+    @PutMapping("/update-points")
+    DeferredResult<User> updatePoints(
+            @RequestParam Long newPoints, @RequestParam Long id, @RequestParam String token
+    ) {
+        logger.info("Received update points request");
+        DeferredResult<User> output = new DeferredResult<>(10L, new UserNotFoundException(id));
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            try {
+                var user = userService.updatePoints(id, newPoints, token);
+                output.setResult(user);
+            } catch (InvalidPasswordException | AuthenticationException e) {
+                output.setErrorResult(e);
+            }
+        });
+
+        logger.info("Thread freed");
+        return output;
     }
 }

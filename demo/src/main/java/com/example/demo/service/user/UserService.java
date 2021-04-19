@@ -2,21 +2,24 @@ package com.example.demo.service.user;
 
 import com.example.demo.models.dto.User;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 public interface UserService {
-    User getUserById(Long id);
+    User getUserById(Long id, String token);
+    Map.Entry<String, Long> getRandomUser();
 
-    User getRandomUser();
+    Map<String, Long> getAll();
 
-    List<User> getAll();
+    User updateUsername(Long id, String newUsername, String token);
 
-    User updateUsername(String username, String newUsername);
+    User updatePassword(Long id, String newPassword, String token);
 
-    User updatePassword(String username, String newPassword);
+    User updatePoints(Long id, Long newPoints, String token);
 
-    User updatePoints(String username, Long newPoints);
+    User updateUsername(String username, String newUsername, String token);
 
-    void deleteUser(String username);
+    User updatePassword(String password, String newPassword, String token);
+
+    User updatePoints(String username, Long newPoints, String token);
 }
