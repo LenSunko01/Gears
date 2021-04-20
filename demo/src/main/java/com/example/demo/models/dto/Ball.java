@@ -9,6 +9,10 @@ public class Ball {
         chosenHoleInGear = newChosenHoleInGear;
     }
 
+    public Ball() {
+        this(-1, -1);
+    }
+
     public int getChosenGear() {
         return chosenGear;
     }
