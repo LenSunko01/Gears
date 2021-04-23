@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface GameStateDao {
     GameState getStateById(Long id);
-    GameState getStateByUserId(Long id);
     GameState saveGameState(GameState game);
-    void deleteGame(GameState game);
-    List<GameState> getAll();
-    void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond);
+    GameState updateGameState(Long id, GameState newGameState);
+    void deleteGame(Long id);
 }

@@ -1,5 +1,7 @@
 package com.example.demo.models.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +14,20 @@ public class GameState {
     private List<User> users;
     private Turn turn;
     private CurrentGameState currentGameState;
-    public GameState(Long id, Long scoreOfFirstPlayer, Long scoreOfSecondPlayer) {
-        this.id = id;
-        this.scoreOfFirstPlayer = scoreOfFirstPlayer;
-        this.scoreOfSecondPlayer = scoreOfSecondPlayer;
+    private int countPlayersLeftGame;
+    public GameState(List<User> users) {
+        scoreOfFirstPlayer = 0L;
+        scoreOfSecondPlayer = 0L;
+        this.users = users;
+        firstPlayerBoard = new Board();
+        secondPlayerBoard = new Board();
+        turn = new Turn();
+        currentGameState = CurrentGameState.CONTINUE;
+        countPlayersLeftGame = 0;
     }
+
+    public GameState() {}
+
     public Board getFirstPlayerBoard() {
         return firstPlayerBoard;
     }
@@ -57,13 +68,20 @@ public class GameState {
         this.turn = turn;
     }
 
+    public void setCountPlayersLeftGame(int countPlayersLeftGame) {
+        this.countPlayersLeftGame = countPlayersLeftGame;
+    }
+
+    public int getCountPlayersLeftGame() {
+        return countPlayersLeftGame;
+    }
+
     public enum CurrentPlayer {FIRSTPLAYER, SECONDPLAYER}
     public enum CurrentGameState {CONTINUE, DRAW, FIRSTPLAYER, SECONDPLAYER}
 
     private class Turn {
-        private Turn() {
-            int generateTurn = (int) ((Math.random() * (2)));
-            this.currentPlayer = CurrentPlayer.values()[generateTurn];
+        public Turn() {
+            this.currentPlayer = CurrentPlayer.FIRSTPLAYER;
             this.degree = null;
         }
 
@@ -84,18 +102,18 @@ public class GameState {
         }
 
         private int numberOfActiveGear = -1;
+        @JsonProperty("currentPlayer")
         private CurrentPlayer currentPlayer;
         private ArrayList<Integer> degree;
     }
 
-    public GameState(List<User> users) {
-        scoreOfFirstPlayer = 0L;
-        scoreOfSecondPlayer = 0L;
-        this.users = users;
-        firstPlayerBoard = new Board();
-        secondPlayerBoard = new Board();
-        turn = new Turn();
-        currentGameState = CurrentGameState.CONTINUE;
+
+    public CurrentPlayer getCurrentPlayer() {
+        return turn.currentPlayer;
+    }
+
+    public void setCurrentPlayer(CurrentPlayer currentPlayer) {
+        turn.currentPlayer = currentPlayer;
     }
 
     public Long getId() {

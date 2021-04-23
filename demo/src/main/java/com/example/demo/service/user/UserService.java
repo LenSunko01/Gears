@@ -1,6 +1,8 @@
 package com.example.demo.service.user;
 
 import com.example.demo.models.dto.User;
+import org.springframework.data.util.Pair;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -10,6 +12,8 @@ public interface UserService {
     Map.Entry<String, Long> getRandomUser();
 
     Map<String, Long> getAll();
+
+    DeferredResult<Map.Entry<Long, Boolean>> findOpponent(String username, String token);
 
     User updateUsername(Long id, String newUsername, String token);
 

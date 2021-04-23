@@ -24,6 +24,7 @@ import java.util.Objects;
 @Repository
 @Primary
 public class SqliteUserDaoImpl implements AllUsersDao {
+    private static final Log logger = LogFactory.getLog(UserController.class);
     private static final String DB_FILE_NAME = "gameState.sql";
 
     private static final String GET_USER_BY_USERNAME = "select * from user_state where user_login = ?";
@@ -74,9 +75,11 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     public User getUserByUsername(String username) {
         PreparedStatement getUserStmt;
         try {
+            logger.info("Getting user " + username + "from database");
             getUserStmt = conn.prepareStatement(GET_USER_BY_USERNAME);
             getUserStmt.setString(1, username);
             ResultSet rs = getUserStmt.executeQuery();
+            logger.info("Got ResultSet");
             return getUserByQuery(rs);
         } catch (SQLException e) {
             e.printStackTrace();

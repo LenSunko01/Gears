@@ -180,6 +180,7 @@ public class Board {
     }
 
     private class Gutter {
+        public Gutter() {}
         private int degree = 60;
         private int howManyBalls = 6;
 
@@ -208,6 +209,7 @@ public class Board {
     }
 
     private class Pot {
+        public Pot() {}
         private int degree = 120;
         private int howManyBalls = 0;
 
@@ -226,52 +228,5 @@ public class Board {
         public void setHowManyBalls(int howManyBalls) {
             this.howManyBalls = howManyBalls;
         }
-    }
-
-    public static void main(String[] args) {
-        Board board = new Board();
-
-        var neighbourUp = new ArrayList<Integer>();
-        neighbourUp.add(-1);
-        neighbourUp.add(1);
-        Gear gearUpp = new Gear(1, false, true, neighbourUp);
-        gearUpp.getHoles().get(0).setNumberOfBall(0);
-        gearUpp.getHoles().get(0).setFree(false);
-        var neighbourMidd = new ArrayList<Integer>();
-        neighbourMidd.add(0);
-        neighbourMidd.add(2);
-        Gear gearMiddle = new Gear(1, false, false, neighbourMidd);
-        var neighbourDown = new ArrayList<Integer>();
-        neighbourDown.add(1);
-        neighbourDown.add(-1);
-        Gear gearDown = new Gear(1, true, false, neighbourDown);
-        var listGear = new ArrayList<Gear>();
-        listGear.add(gearUpp);
-        listGear.add(gearMiddle);
-        listGear.add(gearDown);
-        board.setGears(listGear);
-        board.rebuild(60, 0);
-        System.out.println(board.getBalls().size());
-        if (board.getRightGutter().getHowManyBalls() == 5) {
-            System.out.println("uspehhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-        }
-        if (!board.getGears().get(0).getHoles().get(0).isFree()) {
-            System.out.println("uspehhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-        }
-        if (board.getBalls().get(0).getChosenGear() == 0) {
-            System.out.println("uspehhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-        }
-
-        board.rebuild(260, 1);
-        System.out.println(board.getBalls().size());
-        board.rebuild(40, 0);
-        System.out.println(board.getBalls().size());
-        board.rebuild(260, 2);
-        System.out.println(board.getBalls().size());
-        board.rebuild(200, 1);
-        System.out.println(board.getBalls().size());
-        board.rebuild(220, 2);
-        System.out.println(board.getBalls().size());
-
     }
 }

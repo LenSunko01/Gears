@@ -18,7 +18,6 @@ Remember about concurrency (!)
 public class GameStateDaoImpl implements GameStateDao {
 
     Map<Long, GameState> gameStateStorage = new HashMap<>();
-    Map<Long, Long> usersToGame = new HashMap<>();
 
     @Override
     public GameState getStateById(Long id) {
@@ -26,35 +25,23 @@ public class GameStateDaoImpl implements GameStateDao {
     }
 
     @Override
-    public GameState getStateByUserId(Long id) {
-        return gameStateStorage.get(usersToGame.get(id));
-    }
-
-    @Override
     public GameState saveGameState(GameState game) {
         long id = generateGameId();
         game.setId(id);
-        gameStateStorage.put(game.getId(), game);
+        gameStateStorage.put(id, game);
         return game;
     }
 
     @Override
-    public void deleteGame(GameState game) {
-        usersToGame.entrySet().removeIf(entry -> entry.getKey().equals(game.getId()));
+    public GameState updateGameState(Long id, GameState newGameState) {
+        gameStateStorage.replace(id, newGameState);
+        return newGameState;
     }
 
     @Override
-    public List<GameState> getAll() {
-        return new ArrayList<>(gameStateStorage.values());
+    public void deleteGame(Long id) {
+        gameStateStorage.remove(id);
     }
-
-
-    @Override
-    public void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond) {
-        usersToGame.put(idUserOne,idGame);
-        usersToGame.put(idUserSecond,idGame);
-    }
-
 
     private Long generateGameId() {
         long id = new Random().nextLong();

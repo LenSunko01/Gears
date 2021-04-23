@@ -6,10 +6,8 @@ import com.example.demo.models.dto.User;
 import java.util.List;
 
 public interface GameStateService {
-    GameState getStateById(Long id);
-    GameState getStateByUserId(Long id);
-    void deleteGame(Long id);
-    List<GameState> getAll();
-    GameState saveGameState(GameState game);
-    void addPlayersToGame(Long idGame, Long idUserOne, Long idUserSecond);
+    Long setGame(User firstUser, User secondUser);
+    GameState getStateById(Long id, String token);
+    GameState updateStateById(Long id, String token, GameState newGameState);
+    void deleteGameState(Long id, String token);
 }

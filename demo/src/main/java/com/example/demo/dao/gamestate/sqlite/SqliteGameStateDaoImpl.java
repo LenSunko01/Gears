@@ -1,3 +1,4 @@
+/*
 package com.example.demo.dao.gamestate.sqlite;
 
 import com.example.demo.dao.gamestate.GameStateDao;
@@ -167,4 +168,4 @@ public class SqliteGameStateDaoImpl implements GameStateDao {
             e.printStackTrace();
         }
     }
-}
+}*/

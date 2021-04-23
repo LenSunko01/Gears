@@ -1,13 +1,9 @@
 package com.example.demo.web.controllers;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
-import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
-import com.example.demo.service.game.GameService;
-import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
@@ -23,9 +19,6 @@ public class UserController {
     private final UserService userService;
     private final RegistrationService registerService;
     private final LoginService loginService;
-    // Key is user who wants to play, value is his future opponent
-    private final Map<DeferredResult<String>, String> usersReadyToPlay =
-            new ConcurrentHashMap<>();
 
     UserController(
             UserService userService,
@@ -97,40 +90,15 @@ public class UserController {
         return output;
     }
 
-    private void matchOpponents() {
-        if (this.usersReadyToPlay.size() < 2) {
-            return;
-        }
 
-        var entries = this.usersReadyToPlay.entrySet();
-
-        while (entries.size() > 1) {
-            Iterator<Map.Entry<DeferredResult<String>, String>> it = entries.iterator();
-            var firstUserEntry = it.next();
-            var secondUserEntry = it.next();
-
-            firstUserEntry.getKey().setResult(secondUserEntry.getValue());
-            secondUserEntry.getKey().setResult(firstUserEntry.getValue());
-
-            usersReadyToPlay.remove(firstUserEntry.getKey());
-            usersReadyToPlay.remove(secondUserEntry.getKey());
-        }
-    }
 
     /*
-    matches opponents but does not create a game
+    matches opponents and returns game ID and
+    if user is supposed to make the first move true, otherwise false
      */
     @PostMapping("/find-opponent")
-    DeferredResult<String> newUser(@RequestBody String username) {
-        final DeferredResult<String> result = new DeferredResult<>(100L, new OpponentNotFoundException());
-
-        this.usersReadyToPlay.put(result, username);
-
-        result.onCompletion(() -> usersReadyToPlay.remove(result));
-
-        result.onTimeout(() -> usersReadyToPlay.remove(result));
-        matchOpponents();
-        return result;
+    DeferredResult<Map.Entry<Long, Boolean>> newUser(@RequestParam String username, @RequestParam String token) {
+        return userService.findOpponent(username, token);
     }
 
     @PutMapping("/update-username")

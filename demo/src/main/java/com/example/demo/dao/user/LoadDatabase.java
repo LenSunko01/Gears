@@ -1,6 +1,6 @@
 package com.example.demo.dao.user;
 import com.example.demo.models.dto.User;
-import com.example.demo.service.game.GameService;
+import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
 import org.slf4j.Logger;
@@ -8,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class LoadDatabase {
@@ -20,22 +18,14 @@ public class LoadDatabase {
     CommandLineRunner initDatabase(
             UserService userService,
             RegistrationService registrationService,
-            GameService gameService
+            GameStateService gameStateService
     ) {
 
         return args -> {
-            /*log.info("Preloading " + registrationService.registerUser("Player X22229", "123qwerty"));
-            log.info("Preloading " + registrationService.registerUser("Player Y92222", "54321"));
-            log.info("Preloading " + registrationService.registerUser("Player Z92222", "dogdog"));
-            log.info("Preloading " + registrationService.registerUser("Player M9222", "catcat"));
-            log.info("Preloading " + registrationService.registerUser("Player N9222", "noyes"));
-
-            var allUsers = userService.getAll();
-            User testUser1 = allUsers.get(0);
-            User testUser2 = allUsers.get(1);
-
-
-            log.info("LOAD GAMESTATE with id " + gameService.setGame(testUser1, testUser2));*/
+            var secondUser = new User(13L, "M", "zhopa", 0L);
+            var firstUser = new User(15L, "NG", "zhopa", 0L);
+            var gameId = gameStateService.setGame(firstUser, secondUser);
+            log.info("Game id " + gameId);
         };
     }
 }
