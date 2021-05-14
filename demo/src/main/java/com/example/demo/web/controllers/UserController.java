@@ -78,12 +78,12 @@ public class UserController {
         return getUserInformationByMapEntry(registerService.registerUser(username, password));
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public UserInformation loginUser(@RequestParam String username, @RequestParam String password) {
         return getUserInformationByMapEntry(loginService.loginUser(username, password));
     }
 
-    @GetMapping("/get-user")
+    @PostMapping("/get-user")
     DeferredResult<User> getUser(@RequestParam Long id, @RequestParam String token) {
         logger.info("Received get user by ID request");
         DeferredResult<User> output = new DeferredResult<>(100L, new UserNotFoundException(id));
@@ -117,7 +117,11 @@ public class UserController {
      */
     @PostMapping("/find-opponent")
     DeferredResult<Map.Entry<Long, Boolean>> newUser(@RequestParam String username, @RequestParam String token) {
+        logger.info("HUYYYYYYYYYYYYYYYYYY");
         return userService.findOpponent(username, token);
+       /* DeferredResult<Map.Entry<Long, Boolean>> buf = new DeferredResult<>(1L, false);
+        buf.setResult(new AbstractMap.SimpleEntry<>(1L, false));
+        return buf;*/
     }
 
     @PutMapping("/update-username")

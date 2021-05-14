@@ -34,7 +34,7 @@ public class GameStateController {
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 
-    @GetMapping("/get-game")
+    @PostMapping("/get-game")
     ResponseEntity<GameState> gameState(
             @RequestParam Long id, @RequestParam String token, @RequestParam GameState.CurrentPlayer currentPlayer
     ) {
