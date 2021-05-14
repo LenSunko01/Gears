@@ -119,9 +119,6 @@ public class UserController {
     DeferredResult<Map.Entry<Long, Boolean>> newUser(@RequestParam String username, @RequestParam String token) {
         logger.info("HUYYYYYYYYYYYYYYYYYY");
         return userService.findOpponent(username, token);
-       /* DeferredResult<Map.Entry<Long, Boolean>> buf = new DeferredResult<>(1L, false);
-        buf.setResult(new AbstractMap.SimpleEntry<>(1L, false));
-        return buf;*/
     }
 
     @PutMapping("/update-username")

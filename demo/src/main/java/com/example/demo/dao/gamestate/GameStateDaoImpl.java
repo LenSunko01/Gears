@@ -45,7 +45,7 @@ public class GameStateDaoImpl implements GameStateDao {
 
     private Long generateGameId() {
         long id = new Random().nextLong();
-        while (gameStateStorage.containsKey(id)) {
+        while (gameStateStorage.containsKey(id) || id <= 0) {
             id = new Random().nextLong();
         }
         return id;

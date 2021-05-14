@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Objects;
 
 @RestController
 public class GameStateController {
@@ -52,10 +53,11 @@ public class GameStateController {
         return keepPolling(id, token, currentPlayer);
     }
 
-    @PostMapping("/update-game")
+    @PostMapping("/update-game/{id}")
     ResponseEntity<String> updateGameState(
-            @RequestParam Long id, @RequestParam String token, @RequestBody GameState newGameState
+            @RequestHeader HttpHeaders headers, @PathVariable Long id, @RequestBody GameState newGameState
     ) {
+        var token = headers.getFirst("userToken");
         logger.info("Received update game state by ID request");
         try {
             gameStateService.updateStateById(id, token, newGameState);
