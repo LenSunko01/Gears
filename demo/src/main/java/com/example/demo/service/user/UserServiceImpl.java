@@ -132,16 +132,11 @@ public class UserServiceImpl implements UserService {
 
     public DeferredResult<Map.Entry<Long, Boolean>> findOpponent(String username, String token) {
         final DeferredResult<Map.Entry<Long, Boolean>> result = new DeferredResult<>(10000L, new OpponentNotFoundException());
-        logger.info("Trying to get user" + username + "by username from database");
         var user = allUsers.getUserByUsername(username);
         var id = user.getId();
-        logger.info("Got user from database");
         try {
-            logger.info("Trying to validate token");
             validateToken(id, token);
-            logger.info("Validated token");
         } catch (AuthenticationException e) {
-            logger.info("Got authentication exception");
             result.setErrorResult(e);
             return result;
         }

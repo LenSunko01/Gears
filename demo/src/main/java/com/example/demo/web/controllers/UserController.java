@@ -30,6 +30,14 @@ public class UserController {
         this.loginService = loginService;
     }
 
+    public static class UserInformation {
+        public String token;
+        public Long id;
+        public UserInformation(String token, Long id) {
+            this.token = token;
+            this.id = id;
+        }
+    }
 
     @GetMapping("/users")
     DeferredResult<Map<String, Long>> getAllUsers() {
@@ -61,14 +69,18 @@ public class UserController {
         return output;
     }
 
+    private UserInformation getUserInformationByMapEntry(Map.Entry<String, Long> userEntry) {
+        return new UserInformation(userEntry.getKey(), userEntry.getValue());
+    }
+
     @PostMapping("/register")
-    public Map.Entry<String, Long> registerUser(@RequestParam String username, @RequestParam String password) {
-        return registerService.registerUser(username, password);
+    public UserInformation registerUser(@RequestParam String username, @RequestParam String password) {
+        return getUserInformationByMapEntry(registerService.registerUser(username, password));
     }
 
     @GetMapping("/login")
-    public Map.Entry<String, Long> loginUser(@RequestParam String username, @RequestParam String password) {
-        return loginService.loginUser(username, password);
+    public UserInformation loginUser(@RequestParam String username, @RequestParam String password) {
+        return getUserInformationByMapEntry(loginService.loginUser(username, password));
     }
 
     @GetMapping("/get-user")
@@ -90,7 +102,14 @@ public class UserController {
         return output;
     }
 
-
+    public static class GameInfo {
+        public Long gameId;
+        public boolean isFirstPlayer;
+        public GameInfo(Long gameId, boolean isFirstPlayer) {
+            this.gameId = gameId;
+            this.isFirstPlayer = isFirstPlayer;
+        }
+    }
 
     /*
     matches opponents and returns game ID and
