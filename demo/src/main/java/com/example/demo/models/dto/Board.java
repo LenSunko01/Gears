@@ -59,21 +59,14 @@ public class Board {
                 changingGear.setDegree(360 - step);
             }
             int indexOfDownNeighbour;
-            if (changingGear.isLast()) {
-                indexOfDownNeighbour = -1;
-            } else {
-                indexOfDownNeighbour = changingGear.getNeighbours().get(1);
-            }
+            indexOfDownNeighbour = getDownNeighbourIndex(changingGear, changingGear.isLast());
 
             int indexOfUpperNeighbour;
-            if (changingGear.isFirst()) {
-                indexOfUpperNeighbour = -1;
-            } else {
-                indexOfUpperNeighbour = changingGear.getNeighbours().get(0);
-            }
+            indexOfUpperNeighbour = getIndexUpperNeighbour(changingGear);
 
             Gear downNeighbourOfChangingGear = null;
             Gear upperNeighbourOfChangingGear = null;
+
             if (indexOfDownNeighbour != -1) {
                 downNeighbourOfChangingGear = this.getGears().get(indexOfDownNeighbour);
             }
@@ -81,87 +74,14 @@ public class Board {
                 upperNeighbourOfChangingGear = this.getGears().get(indexOfUpperNeighbour);
             }
 
-            if (changingGear.isLast()) {
-                for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                    if (holeOfChangingGear.getDegree() == this.getPot().getDegree() && !holeOfChangingGear.isFree()) {
-                        this.getPot().setHowManyBalls(getPot().getHowManyBalls() + holeOfChangingGear.getCapacity());
-                        holeOfChangingGear.setFree(true);
+            extractBallsFromLastGear(activeGear, changingGear);
 
-                        int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
-                        Ball fallenBall = this.getBalls().get(numberOfBallInHole);
-                        this.getBalls().remove(fallenBall);
-                        changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
-                    }
-                }
-                var arrayOfGears = this.getGears();
-                arrayOfGears.set(activeGear, changingGear);
-            }
+            putBallsInFirstGear(activeGear, changingGear);
 
-            if (changingGear.isFirst()) {
-                for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                    if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree() ||
-                            holeOfChangingGear.getDegree() == this.getRightGutter().getDegree()) {
+            putToDownNeighbour(changingGear, indexOfDownNeighbour, downNeighbourOfChangingGear);
 
-                        if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree()) {
-                            this.getLeftGutter().setHowManyBalls(getLeftGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
-                        }
+            getFromUpperNeighbour(activeGear, changingGear, upperNeighbourOfChangingGear);
 
-                        if (holeOfChangingGear.getDegree() == this.getRightGutter().getDegree()) {
-                            this.getRightGutter().setHowManyBalls(getRightGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
-                        }
-                        holeOfChangingGear.setFree(false);
-                        int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
-                        Ball fallenBall = this.getBalls().get(numberOfBallInHole);
-                        fallenBall.setChosenGear(activeGear);
-                        fallenBall.setChosenHoleInGear(holeOfChangingGear.getNumberOfHole());
-                        this.getBalls().set(numberOfBallInHole, fallenBall);
-                        changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
-                    }
-                }
-                var arrayOfGears = this.getGears();
-                arrayOfGears.set(activeGear, changingGear);
-            }
-
-
-            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                if (downNeighbourOfChangingGear != null) {
-                    for (Gear.Hole holeOfDownNeighbourOfChangingGear : downNeighbourOfChangingGear.getHoles()) {
-                        if (holeOfChangingGear.getDegree() % 180 == 0) {
-                            continue;
-                        }
-                        if (holeOfChangingGear.getDegree() % 180 == (180 - holeOfDownNeighbourOfChangingGear.getDegree()) % 180) {
-                            holeOfChangingGear.setFree(true);
-                            holeOfDownNeighbourOfChangingGear.setFree(false);
-                            int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
-                            Ball fallenBall = this.getBalls().get(numberOfBallInHole);
-                            fallenBall.setChosenGear(indexOfDownNeighbour);
-                            fallenBall.setChosenHoleInGear(holeOfDownNeighbourOfChangingGear.getNumberOfHole());
-                            this.getBalls().set(numberOfBallInHole, fallenBall);
-                            changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
-                            downNeighbourOfChangingGear.getHoles().set(holeOfDownNeighbourOfChangingGear.getNumberOfHole(), holeOfDownNeighbourOfChangingGear);
-                        }
-                    }
-                }
-
-                if (upperNeighbourOfChangingGear != null) {
-                    for (Gear.Hole holeOfUpperNeighbourOfChangingGear : upperNeighbourOfChangingGear.getHoles()) {
-                        if (holeOfChangingGear.getDegree() % 180 == 0) {
-                            continue;
-                        }
-                        if (holeOfChangingGear.getDegree() % 180 == (180 - holeOfUpperNeighbourOfChangingGear.getDegree()) % 180) {
-                            holeOfChangingGear.setFree(false);
-                            holeOfUpperNeighbourOfChangingGear.setFree(true);
-                            int numberOfBallInHole = holeOfUpperNeighbourOfChangingGear.getNumberOfBall();
-                            Ball fallenBall = this.getBalls().get(numberOfBallInHole);
-                            fallenBall.setChosenGear(activeGear);
-                            fallenBall.setChosenHoleInGear(holeOfChangingGear.getNumberOfHole());
-                            this.getBalls().set(numberOfBallInHole, fallenBall);
-                            changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
-                            upperNeighbourOfChangingGear.getHoles().set(holeOfUpperNeighbourOfChangingGear.getNumberOfHole(), holeOfUpperNeighbourOfChangingGear);
-                        }
-                    }
-                }
-            }
             var arrayOfGears = this.getGears();
             arrayOfGears.set(activeGear, changingGear);
             if (indexOfUpperNeighbour != -1) {
@@ -174,13 +94,118 @@ public class Board {
 
     }
 
+    private void getFromUpperNeighbour(int activeGear, Gear changingGear, Gear upperNeighbourOfChangingGear) {
+        if (upperNeighbourOfChangingGear != null) {
+            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
+                for (Gear.Hole holeOfUpperNeighbourOfChangingGear : upperNeighbourOfChangingGear.getHoles()) {
+                    if (holeOfChangingGear.getDegree() % 180 == 0) {
+                        continue;
+                    }
+                    if (holeOfChangingGear.getDegree() % 180 == (180 - holeOfUpperNeighbourOfChangingGear.getDegree()) % 180) {
+                        holeOfChangingGear.setFree(false);
+                        holeOfUpperNeighbourOfChangingGear.setFree(true);
+                        moveBall(activeGear, holeOfUpperNeighbourOfChangingGear, holeOfChangingGear.getNumberOfHole());
+                        changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
+                        upperNeighbourOfChangingGear.getHoles().set(holeOfUpperNeighbourOfChangingGear.getNumberOfHole(), holeOfUpperNeighbourOfChangingGear);
+                    }
+                }
+            }
+        }
+    }
+
+    private void putToDownNeighbour(Gear changingGear, int indexOfDownNeighbour, Gear downNeighbourOfChangingGear) {
+        if (downNeighbourOfChangingGear != null) {
+            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
+                for (Gear.Hole holeOfDownNeighbourOfChangingGear : downNeighbourOfChangingGear.getHoles()) {
+                    if (holeOfChangingGear.getDegree() % 180 == 0) {
+                        continue;
+                    }
+                    if (holeOfChangingGear.getDegree() % 180 == (180 - holeOfDownNeighbourOfChangingGear.getDegree()) % 180) {
+                        holeOfChangingGear.setFree(true);
+                        holeOfDownNeighbourOfChangingGear.setFree(false);
+                        moveBall(indexOfDownNeighbour, holeOfChangingGear, holeOfDownNeighbourOfChangingGear.getNumberOfHole());
+                        changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
+                        downNeighbourOfChangingGear.getHoles().set(holeOfDownNeighbourOfChangingGear.getNumberOfHole(), holeOfDownNeighbourOfChangingGear);
+                    }
+                }
+            }
+        }
+    }
+
+    private void putBallsInFirstGear(int activeGear, Gear changingGear) {
+        if (changingGear.isFirst()) {
+            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
+                if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree() ||
+                        holeOfChangingGear.getDegree() == this.getRightGutter().getDegree()) {
+
+                    if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree()) {
+                        this.getLeftGutter().setHowManyBalls(getLeftGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
+                    }
+
+                    if (holeOfChangingGear.getDegree() == this.getRightGutter().getDegree()) {
+                        this.getRightGutter().setHowManyBalls(getRightGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
+                    }
+                    holeOfChangingGear.setFree(false);
+                    moveBall(activeGear, holeOfChangingGear, holeOfChangingGear.getNumberOfHole());
+                    changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
+                }
+            }
+            var arrayOfGears = this.getGears();
+            arrayOfGears.set(activeGear, changingGear);
+        }
+    }
+
+    private void moveBall(int activeGear, Gear.Hole holeOfChangingGear, int numberOfHole) {
+        int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
+        Ball fallenBall = this.getBalls().get(numberOfBallInHole);
+        fallenBall.setChosenGear(activeGear);
+        fallenBall.setChosenHoleInGear(numberOfHole);
+        this.getBalls().set(numberOfBallInHole, fallenBall);
+    }
+
+    private void extractBallsFromLastGear(int activeGear, Gear changingGear) {
+        if (changingGear.isLast()) {
+            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
+                if (holeOfChangingGear.getDegree() == this.getPot().getDegree() && !holeOfChangingGear.isFree()) {
+                    this.getPot().setHowManyBalls(getPot().getHowManyBalls() + holeOfChangingGear.getCapacity());
+                    holeOfChangingGear.setFree(true);
+
+                    int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
+                    Ball fallenBall = this.getBalls().get(numberOfBallInHole);
+                    this.getBalls().remove(fallenBall);
+                    changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
+                }
+            }
+            var arrayOfGears = this.getGears();
+            arrayOfGears.set(activeGear, changingGear);
+        }
+    }
+
+    private int getIndexUpperNeighbour(Gear changingGear) {
+        if (changingGear.isFirst()) {
+            return -1;
+        } else {
+            return changingGear.getNeighbours().get(0);
+        }
+    }
+
+    private int getDownNeighbourIndex(Gear changingGear, boolean last) {
+        if (last) {
+            return -1;
+        } else {
+            return changingGear.getNeighbours().get(1);
+        }
+    }
+
 
     public int getStep() {
         return step;
     }
 
     private class Gutter {
-        public Gutter() {}
+        public Gutter() {
+        }
+
         private int degree = 60;
         private int howManyBalls = 6;
 
@@ -209,7 +234,9 @@ public class Board {
     }
 
     private class Pot {
-        public Pot() {}
+        public Pot() {
+        }
+
         private int degree = 120;
         private int howManyBalls = 0;
 
