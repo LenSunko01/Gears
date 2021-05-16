@@ -8,13 +8,32 @@ public class Gear {
     private final boolean isFirst;
     ArrayList<Hole> holes = new ArrayList<>();
     private final int numberOfHoles;
-    ArrayList<Integer> neighbours;
 
-    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, ArrayList<Integer> neighbours) {
+    public ArrayList<Integer> getDownNeighbours() {
+        return downNeighbours;
+    }
+
+    public void setDownNeighbours(ArrayList<Integer> downNeighbours) {
+        this.downNeighbours = downNeighbours;
+    }
+
+    public ArrayList<Integer> getUpperNeighbours() {
+        return upperNeighbours;
+    }
+
+    public void setUpperNeighbours(ArrayList<Integer> upperNeighbours) {
+        this.upperNeighbours = upperNeighbours;
+    }
+
+    //ArrayList<Integer> neighbours;
+    ArrayList<Integer> downNeighbours;
+    ArrayList<Integer> upperNeighbours;
+    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, ArrayList<Integer> downNeighbours, ArrayList<Integer> upperNeighbours) {
         this.numberOfHoles = numberOfHoles;
         this.isLast = isLast;
         this.isFirst = isFirst;
-        this.neighbours = neighbours;
+        this.downNeighbours = downNeighbours;
+        this.upperNeighbours = upperNeighbours;
         int currentDegreeToAdd = 0;
         int step = 360 / numberOfHoles;
         for (int i = 0; i < numberOfHoles; i++) {
@@ -31,10 +50,6 @@ public class Gear {
 
     public int getDegree() {
         return degree;
-    }
-
-    public ArrayList<Integer> getNeighbours() {
-        return neighbours;
     }
 
     public void setDegree(int degree) {

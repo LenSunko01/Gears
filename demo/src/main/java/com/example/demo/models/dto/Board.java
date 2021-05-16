@@ -58,38 +58,18 @@ public class Board {
             } else {
                 changingGear.setDegree(360 - step);
             }
-            int indexOfDownNeighbour;
-            indexOfDownNeighbour = getDownNeighbourIndex(changingGear, changingGear.isLast());
 
-            int indexOfUpperNeighbour;
-            indexOfUpperNeighbour = getIndexUpperNeighbour(changingGear);
-
-            Gear downNeighbourOfChangingGear = null;
-            Gear upperNeighbourOfChangingGear = null;
-
-            if (indexOfDownNeighbour != -1) {
-                downNeighbourOfChangingGear = this.getGears().get(indexOfDownNeighbour);
-            }
-            if (indexOfUpperNeighbour != -1) {
-                upperNeighbourOfChangingGear = this.getGears().get(indexOfUpperNeighbour);
-            }
 
             extractBallsFromLastGear(activeGear, changingGear);
 
             putBallsInFirstGear(activeGear, changingGear);
-
-            putToDownNeighbour(changingGear, indexOfDownNeighbour, downNeighbourOfChangingGear);
-
-            getFromUpperNeighbour(activeGear, changingGear, upperNeighbourOfChangingGear);
-
-            var arrayOfGears = this.getGears();
-            arrayOfGears.set(activeGear, changingGear);
-            if (indexOfUpperNeighbour != -1) {
-                arrayOfGears.set(indexOfUpperNeighbour, upperNeighbourOfChangingGear);
+            for (var indexDownNeighbour : changingGear.getDownNeighbours()) {
+                putToDownNeighbour(changingGear, indexDownNeighbour, this.getGears().get(indexDownNeighbour));
             }
-            if (indexOfDownNeighbour != -1) {
-                arrayOfGears.set(indexOfDownNeighbour, downNeighbourOfChangingGear);
+            for (var indexUpperNeighbour : changingGear.getUpperNeighbours()) {
+                getFromUpperNeighbour(activeGear, changingGear, this.gears.get(indexUpperNeighbour));
             }
+
         }
 
     }
@@ -180,23 +160,6 @@ public class Board {
             arrayOfGears.set(activeGear, changingGear);
         }
     }
-
-    private int getIndexUpperNeighbour(Gear changingGear) {
-        if (changingGear.isFirst()) {
-            return -1;
-        } else {
-            return changingGear.getNeighbours().get(0);
-        }
-    }
-
-    private int getDownNeighbourIndex(Gear changingGear, boolean last) {
-        if (last) {
-            return -1;
-        } else {
-            return changingGear.getNeighbours().get(1);
-        }
-    }
-
 
     public int getStep() {
         return step;
