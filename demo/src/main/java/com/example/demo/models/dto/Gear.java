@@ -1,15 +1,16 @@
 package com.example.demo.models.dto;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Gear {
     private int degree;
     private final boolean isLast;
     private final boolean isFirst;
-    ArrayList<Hole> holes = new ArrayList<>();
+    List<Hole> holes = new ArrayList<>();
     private final int numberOfHoles;
 
-    public ArrayList<Integer> getDownNeighbours() {
+    public List<Integer> getDownNeighbours() {
         return downNeighbours;
     }
 
@@ -17,7 +18,7 @@ public class Gear {
         this.downNeighbours = downNeighbours;
     }
 
-    public ArrayList<Integer> getUpperNeighbours() {
+    public List<Integer> getUpperNeighbours() {
         return upperNeighbours;
     }
 
@@ -26,9 +27,9 @@ public class Gear {
     }
 
     //ArrayList<Integer> neighbours;
-    ArrayList<Integer> downNeighbours;
-    ArrayList<Integer> upperNeighbours;
-    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, ArrayList<Integer> downNeighbours, ArrayList<Integer> upperNeighbours) {
+    List<Integer> downNeighbours;
+    List<Integer> upperNeighbours;
+    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, List<Integer> downNeighbours, List<Integer> upperNeighbours) {
         this.numberOfHoles = numberOfHoles;
         this.isLast = isLast;
         this.isFirst = isFirst;
@@ -60,7 +61,7 @@ public class Gear {
         }
     }
 
-    public ArrayList<Hole> getHoles() {
+    public List<Hole> getHoles() {
         return holes;
     }
 

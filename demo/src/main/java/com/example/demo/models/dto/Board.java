@@ -1,10 +1,11 @@
 package com.example.demo.models.dto;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Board {
-    private ArrayList<Gear> gears;
-    private ArrayList<Ball> balls = new ArrayList<>();
+    private List<Gear> gears;
+    private List<Ball> balls = new ArrayList<>();
     private Gutter rightGutter = new Gutter(60);
     private Gutter leftGutter = new Gutter(300);
     private Pot pot = new Pot();
@@ -34,19 +35,19 @@ public class Board {
         this.pot = pot;
     }
 
-    public ArrayList<Ball> getBalls() {
+    public List<Ball> getBalls() {
         return balls;
     }
 
-    public void setBalls(ArrayList<Ball> balls) {
+    public void setBalls(List<Ball> balls) {
         this.balls = balls;
     }
 
-    public ArrayList<Gear> getGears() {
+    public List<Gear> getGears() {
         return gears;
     }
 
-    public void setGears(ArrayList<Gear> gears) {
+    public void setGears(List<Gear> gears) {
         this.gears = gears;
     }
 
@@ -81,7 +82,8 @@ public class Board {
                     if (holeOfChangingGear.getDegree() % 180 == 0) {
                         continue;
                     }
-                    if (holeOfChangingGear.getDegree() % 180 == (180 - holeOfUpperNeighbourOfChangingGear.getDegree()) % 180) {
+                    if (!holeOfUpperNeighbourOfChangingGear.isFree() && holeOfChangingGear.isFree()
+                            && holeOfChangingGear.getDegree() % 180 == (180 - holeOfUpperNeighbourOfChangingGear.getDegree()) % 180) {
                         holeOfChangingGear.setFree(false);
                         holeOfUpperNeighbourOfChangingGear.setFree(true);
                         moveBall(activeGear, holeOfUpperNeighbourOfChangingGear, holeOfChangingGear.getNumberOfHole());
@@ -100,7 +102,8 @@ public class Board {
                     if (holeOfChangingGear.getDegree() % 180 == 0) {
                         continue;
                     }
-                    if (holeOfChangingGear.getDegree() % 180 == (180 - holeOfDownNeighbourOfChangingGear.getDegree()) % 180) {
+                    if (holeOfDownNeighbourOfChangingGear.isFree() && !holeOfChangingGear.isFree() &&
+                            holeOfChangingGear.getDegree() % 180 == (180 - holeOfDownNeighbourOfChangingGear.getDegree()) % 180) {
                         holeOfChangingGear.setFree(true);
                         holeOfDownNeighbourOfChangingGear.setFree(false);
                         moveBall(indexOfDownNeighbour, holeOfChangingGear, holeOfDownNeighbourOfChangingGear.getNumberOfHole());
@@ -115,7 +118,7 @@ public class Board {
     private void putBallsInFirstGear(int activeGear, Gear changingGear) {
         if (changingGear.isFirst()) {
             for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree() ||
+                if (holeOfChangingGear. isFree() && holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree() ||
                         holeOfChangingGear.getDegree() == this.getRightGutter().getDegree()) {
 
                     if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree()) {
@@ -146,7 +149,7 @@ public class Board {
     private void extractBallsFromLastGear(int activeGear, Gear changingGear) {
         if (changingGear.isLast()) {
             for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                if (holeOfChangingGear.getDegree() == this.getPot().getDegree() && !holeOfChangingGear.isFree()) {
+                if (!holeOfChangingGear. isFree() && holeOfChangingGear.getDegree() == this.getPot().getDegree() && !holeOfChangingGear.isFree()) {
                     this.getPot().setHowManyBalls(getPot().getHowManyBalls() + holeOfChangingGear.getCapacity());
                     holeOfChangingGear.setFree(true);
 
