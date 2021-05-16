@@ -1,11 +1,12 @@
 package com.example.demo.models.dto;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Board {
     private List<Gear> gears;
-    private List<Ball> balls = new ArrayList<>();
     private Gutter rightGutter = new Gutter(60);
     private Gutter leftGutter = new Gutter(300);
     private Pot pot = new Pot();
@@ -35,13 +36,6 @@ public class Board {
         this.pot = pot;
     }
 
-    public List<Ball> getBalls() {
-        return balls;
-    }
-
-    public void setBalls(List<Ball> balls) {
-        this.balls = balls;
-    }
 
     public List<Gear> getGears() {
         return gears;
@@ -60,65 +54,25 @@ public class Board {
                 changingGear.setDegree(360 - step);
             }
 
-
             extractBallsFromLastGear(activeGear, changingGear);
-
             putBallsInFirstGear(activeGear, changingGear);
+
             for (var indexDownNeighbour : changingGear.getDownNeighbours()) {
-                putToDownNeighbour(changingGear, indexDownNeighbour, this.getGears().get(indexDownNeighbour));
+                connectionHoles(changingGear, this.gears.get(indexDownNeighbour));
             }
             for (var indexUpperNeighbour : changingGear.getUpperNeighbours()) {
-                getFromUpperNeighbour(activeGear, changingGear, this.gears.get(indexUpperNeighbour));
+                connectionHoles(this.gears.get(indexUpperNeighbour), changingGear);
             }
 
         }
 
     }
 
-    private void getFromUpperNeighbour(int activeGear, Gear changingGear, Gear upperNeighbourOfChangingGear) {
-        if (upperNeighbourOfChangingGear != null) {
-            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                for (Gear.Hole holeOfUpperNeighbourOfChangingGear : upperNeighbourOfChangingGear.getHoles()) {
-                    if (holeOfChangingGear.getDegree() % 180 == 0) {
-                        continue;
-                    }
-                    if (!holeOfUpperNeighbourOfChangingGear.isFree() && holeOfChangingGear.isFree()
-                            && holeOfChangingGear.getDegree() % 180 == (180 - holeOfUpperNeighbourOfChangingGear.getDegree()) % 180) {
-                        holeOfChangingGear.setFree(false);
-                        holeOfUpperNeighbourOfChangingGear.setFree(true);
-                        moveBall(activeGear, holeOfUpperNeighbourOfChangingGear, holeOfChangingGear.getNumberOfHole());
-                        changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
-                        upperNeighbourOfChangingGear.getHoles().set(holeOfUpperNeighbourOfChangingGear.getNumberOfHole(), holeOfUpperNeighbourOfChangingGear);
-                    }
-                }
-            }
-        }
-    }
-
-    private void putToDownNeighbour(Gear changingGear, int indexOfDownNeighbour, Gear downNeighbourOfChangingGear) {
-        if (downNeighbourOfChangingGear != null) {
-            for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                for (Gear.Hole holeOfDownNeighbourOfChangingGear : downNeighbourOfChangingGear.getHoles()) {
-                    if (holeOfChangingGear.getDegree() % 180 == 0) {
-                        continue;
-                    }
-                    if (holeOfDownNeighbourOfChangingGear.isFree() && !holeOfChangingGear.isFree() &&
-                            holeOfChangingGear.getDegree() % 180 == (180 - holeOfDownNeighbourOfChangingGear.getDegree()) % 180) {
-                        holeOfChangingGear.setFree(true);
-                        holeOfDownNeighbourOfChangingGear.setFree(false);
-                        moveBall(indexOfDownNeighbour, holeOfChangingGear, holeOfDownNeighbourOfChangingGear.getNumberOfHole());
-                        changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
-                        downNeighbourOfChangingGear.getHoles().set(holeOfDownNeighbourOfChangingGear.getNumberOfHole(), holeOfDownNeighbourOfChangingGear);
-                    }
-                }
-            }
-        }
-    }
 
     private void putBallsInFirstGear(int activeGear, Gear changingGear) {
         if (changingGear.isFirst()) {
             for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                if (holeOfChangingGear. isFree() && holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree() ||
+                if (holeOfChangingGear.isFree() && holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree() ||
                         holeOfChangingGear.getDegree() == this.getRightGutter().getDegree()) {
 
                     if (holeOfChangingGear.getDegree() == this.getLeftGutter().getDegree()) {
@@ -129,7 +83,6 @@ public class Board {
                         this.getRightGutter().setHowManyBalls(getRightGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
                     }
                     holeOfChangingGear.setFree(false);
-                    moveBall(activeGear, holeOfChangingGear, holeOfChangingGear.getNumberOfHole());
                     changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
                 }
             }
@@ -138,29 +91,48 @@ public class Board {
         }
     }
 
-    private void moveBall(int activeGear, Gear.Hole holeOfChangingGear, int numberOfHole) {
-        int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
-        Ball fallenBall = this.getBalls().get(numberOfBallInHole);
-        fallenBall.setChosenGear(activeGear);
-        fallenBall.setChosenHoleInGear(numberOfHole);
-        this.getBalls().set(numberOfBallInHole, fallenBall);
-    }
-
     private void extractBallsFromLastGear(int activeGear, Gear changingGear) {
         if (changingGear.isLast()) {
             for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                if (!holeOfChangingGear. isFree() && holeOfChangingGear.getDegree() == this.getPot().getDegree() && !holeOfChangingGear.isFree()) {
+                if (!holeOfChangingGear.isFree() && holeOfChangingGear.getDegree() == this.getPot().getDegree() && !holeOfChangingGear.isFree()) {
                     this.getPot().setHowManyBalls(getPot().getHowManyBalls() + holeOfChangingGear.getCapacity());
                     holeOfChangingGear.setFree(true);
 
-                    int numberOfBallInHole = holeOfChangingGear.getNumberOfBall();
-                    Ball fallenBall = this.getBalls().get(numberOfBallInHole);
-                    this.getBalls().remove(fallenBall);
                     changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
                 }
             }
             var arrayOfGears = this.getGears();
             arrayOfGears.set(activeGear, changingGear);
+        }
+    }
+
+    private boolean connectionHoleWithGearsCenter(Gear upperGear, Gear downGear, Gear.Hole upperHole) {
+        int upperRadius = upperGear.getRadius();
+        int downRadius = downGear.getRadius();
+        int sumRadius = upperRadius + downRadius;
+        double deg = 90 - upperHole.getDegree();
+        double x = sumRadius * Math.cos(Math.toRadians(deg));
+        double y = sumRadius * Math.sin(Math.toRadians(deg));
+        int mistake = 10;
+        x += upperGear.getX();
+        y += upperGear.getY();
+        double dist = Math.sqrt(Math.pow((x - downGear.getX()), 2) + Math.pow((y - downGear.getY()), 2));
+        return dist <= mistake;
+    }
+
+    private void connectionHoles(Gear upperGear, Gear downGear) {
+        for (Gear.Hole holeUpperGear : upperGear.getHoles()) {
+            if (!holeUpperGear.isFree() && connectionHoleWithGearsCenter(upperGear, downGear, holeUpperGear)) {
+                for (Gear.Hole holeDownGear : downGear.getHoles()) {
+                    if (holeDownGear.isFree()
+                            && holeDownGear.getDegree() % 180 == (180 - holeUpperGear.getDegree()) % 180) {
+                        holeDownGear.setFree(false);
+                        holeUpperGear.setFree(true);
+                        break;
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -177,9 +149,6 @@ public class Board {
 
         public Gutter(int degree) {
             this.degree = degree;
-            for (int i = 0; i < howManyBalls; i++) {
-                balls.add(new Ball());
-            }
         }
 
         public int getDegree() {
@@ -221,5 +190,24 @@ public class Board {
         public void setHowManyBalls(int howManyBalls) {
             this.howManyBalls = howManyBalls;
         }
+    }
+
+    public static void main(String[] args) {
+        Gear leftGear = new Gear(1, false, false, 2, 2, 2,
+                Collections.singletonList(1), Collections.emptyList());
+        Gear rightGear = new Gear(1, false, false, 3, 2, 1, Collections.emptyList(),
+                Collections.singletonList(0));
+        leftGear.getHoles().get(0).setFree(true);
+        rightGear.getHoles().get(0).setFree(false);
+        Board b = new Board();
+        b.setGears(Arrays.asList(leftGear, rightGear));
+        b.rebuild(90, 0);
+        b.rebuild(-90,1);
+        if (!b.getGears().get(1).getHoles().get(0).isFree()) {
+            System.out.println("URA");
+        } else {
+            System.out.println("PIZDA");
+        }
+
     }
 }

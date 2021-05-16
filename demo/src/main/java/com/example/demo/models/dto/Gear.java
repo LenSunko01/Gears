@@ -10,6 +10,21 @@ public class Gear {
     List<Hole> holes = new ArrayList<>();
     private final int numberOfHoles;
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getRadius() {
+        return radius;
+    }
+
+    private final int x;
+    private final int y;
+    private final int radius;
     public List<Integer> getDownNeighbours() {
         return downNeighbours;
     }
@@ -29,10 +44,14 @@ public class Gear {
     //ArrayList<Integer> neighbours;
     List<Integer> downNeighbours;
     List<Integer> upperNeighbours;
-    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, List<Integer> downNeighbours, List<Integer> upperNeighbours) {
+    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, int x, int y, int radius,
+                List<Integer> downNeighbours, List<Integer> upperNeighbours) {
         this.numberOfHoles = numberOfHoles;
         this.isLast = isLast;
         this.isFirst = isFirst;
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
         this.downNeighbours = downNeighbours;
         this.upperNeighbours = upperNeighbours;
         int currentDegreeToAdd = 0;
