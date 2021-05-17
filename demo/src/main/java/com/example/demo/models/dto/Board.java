@@ -125,7 +125,7 @@ public class Board {
             if (!holeUpperGear.isFree() && connectionHoleWithGearsCenter(upperGear, downGear, holeUpperGear)) {
                 for (Gear.Hole holeDownGear : downGear.getHoles()) {
                     if (holeDownGear.isFree()
-                            && holeDownGear.getDegree() % 180 == (180 - holeUpperGear.getDegree()) % 180) {
+                            && checkDegreeEquals(holeUpperGear, holeDownGear, upperGear.getX(), downGear.getX())) {
                         holeDownGear.setFree(false);
                         holeUpperGear.setFree(true);
                         break;
@@ -134,6 +134,15 @@ public class Board {
                 break;
             }
         }
+    }
+
+    private boolean checkDegreeEquals(Gear.Hole upperGearHole, Gear.Hole downGearHole, double xUpperGear, double xDownGear) {
+        if (xUpperGear - xDownGear > 0) {
+            return upperGearHole.getDegree() < 180 && downGearHole.getDegree() > 180 &&
+                    upperGearHole.getDegree() == downGearHole.getDegree() - 180;
+        }
+        return upperGearHole.getDegree() > 180 && downGearHole.getDegree() < 180 &&
+                downGearHole.getDegree() == upperGearHole.getDegree() - 180;
     }
 
     public int getStep() {
@@ -202,7 +211,7 @@ public class Board {
         Board b = new Board();
         b.setGears(Arrays.asList(leftGear, rightGear));
         b.rebuild(90, 0);
-        b.rebuild(-90,1);
+        b.rebuild(-90, 1);
         if (!b.getGears().get(1).getHoles().get(0).isFree()) {
             System.out.println("URA");
         } else {
