@@ -137,7 +137,7 @@ public class Board {
     }
 
     private boolean checkDegreeEquals(Gear.Hole upperGearHole, Gear.Hole downGearHole, double xUpperGear, double xDownGear) {
-        if (xUpperGear - xDownGear > 0) {
+        if (xUpperGear - xDownGear < 0) {
             return upperGearHole.getDegree() < 180 && downGearHole.getDegree() > 180 &&
                     upperGearHole.getDegree() == downGearHole.getDegree() - 180;
         }
