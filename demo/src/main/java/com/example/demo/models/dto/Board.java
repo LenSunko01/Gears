@@ -57,10 +57,10 @@ public class Board {
             extractBallsFromLastGear(activeGear, changingGear);
             putBallsInFirstGear(activeGear, changingGear);
 
-            for (var indexDownNeighbour : changingGear.getDownNeighbours()) {
+            for (int indexDownNeighbour : changingGear.getDownNeighbours()) {
                 connectionHoles(changingGear, this.gears.get(indexDownNeighbour));
             }
-            for (var indexUpperNeighbour : changingGear.getUpperNeighbours()) {
+            for (int indexUpperNeighbour : changingGear.getUpperNeighbours()) {
                 connectionHoles(this.gears.get(indexUpperNeighbour), changingGear);
             }
 
@@ -86,7 +86,7 @@ public class Board {
                     changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
                 }
             }
-            var arrayOfGears = this.getGears();
+            List<Gear> arrayOfGears = this.getGears();
             arrayOfGears.set(activeGear, changingGear);
         }
     }
@@ -101,7 +101,7 @@ public class Board {
                     changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
                 }
             }
-            var arrayOfGears = this.getGears();
+            List<Gear> arrayOfGears = this.getGears();
             arrayOfGears.set(activeGear, changingGear);
         }
     }
