@@ -117,7 +117,6 @@ public class UserController {
      */
     @PostMapping("/find-opponent")
     DeferredResult<Map.Entry<Long, Boolean>> newUser(@RequestParam String username, @RequestParam String token) {
-        logger.info("HUYYYYYYYYYYYYYYYYYY");
         return userService.findOpponent(username, token);
     }
 

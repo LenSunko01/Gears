@@ -2,6 +2,7 @@ package com.example.demo.service.gamestate;
 
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.dao.gamestate.GameStateDao;
+import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.user.UserService;
@@ -48,6 +49,13 @@ public class GameStateServiceImpl implements GameStateService {
         logger.info("Validated token, trying to update game state");
         gameStateRepository.updateGameState(id, newGameState);
         return newGameState;
+    }
+
+    @Override
+    public GameState updateBoardById(Long id, String token, GameState.CurrentPlayer player, Board board) {
+        validateToken(id, token);
+        logger.info("Validated token, trying to update board");
+        return gameStateRepository.updateBoardInGameState(id, player, board);
     }
 
     @Override

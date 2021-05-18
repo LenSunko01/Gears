@@ -1,9 +1,9 @@
 package com.example.demo.web.controllers;
 
+import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
 import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.web.exceptions.AuthenticationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpHeaders;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Objects;
 
 @RestController
 public class GameStateController {
@@ -31,7 +30,7 @@ public class GameStateController {
         } catch (InterruptedException ignored) {
         }
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/game?id=" + id + "&token=" + token + "&currentPlayer=" + currentPlayer));
+        headers.setLocation(URI.create("/get-game?id=" + id + "&token=" + token + "&currentPlayer=" + currentPlayer));
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 
@@ -47,7 +46,10 @@ public class GameStateController {
             logger.info("Caught authentication exception");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        if (res.getCurrentPlayer().equals(currentPlayer)) {
+        if (res.getCurrentPlayer().equals(currentPlayer)
+            && res.isFirstPlayerHasInitializedBoard()
+            && res.isSecondPlayerHasInitializedBoard()
+        ) {
             return ResponseEntity.ok(res);
         }
         return keepPolling(id, token, currentPlayer);
@@ -65,6 +67,24 @@ public class GameStateController {
             return new ResponseEntity<>("No right to update the game", HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok("Game updated");
+    }
+
+    @PostMapping("/init")
+    ResponseEntity<GameState> initBoard(
+            @RequestParam Long id,
+            @RequestParam String token,
+            @RequestParam GameState.CurrentPlayer currentPlayer,
+            @RequestBody Board board
+    ) {
+        logger.info("Received init board in game state by ID request");
+        GameState res;
+        try {
+            res = gameStateService.updateBoardById(id, token, currentPlayer, board);
+        } catch (AuthenticationException e) {
+            logger.info("Caught authentication exception");
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(res);
     }
 
     @DeleteMapping("/end-game")
