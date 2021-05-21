@@ -15,6 +15,7 @@ public class GameState {
     private Turn turn;
     private CurrentGameState currentGameState;
     private int countPlayersLeftGame;
+
     public GameState(List<User> users) {
         scoreOfFirstPlayer = 0L;
         scoreOfSecondPlayer = 0L;
@@ -26,7 +27,8 @@ public class GameState {
         countPlayersLeftGame = 0;
     }
 
-    public GameState() {}
+    public GameState() {
+    }
 
     public Board getFirstPlayerBoard() {
         return firstPlayerBoard;
@@ -77,9 +79,10 @@ public class GameState {
     }
 
     public enum CurrentPlayer {FIRSTPLAYER, SECONDPLAYER}
+
     public enum CurrentGameState {CONTINUE, DRAW, FIRSTPLAYER, SECONDPLAYER}
 
-    private class Turn {
+    protected class Turn {
         public Turn() {
             this.currentPlayer = CurrentPlayer.FIRSTPLAYER;
             this.degree = null;
@@ -99,6 +102,10 @@ public class GameState {
 
         public void setDegree(ArrayList<Integer> degree) {
             this.degree = degree;
+        }
+
+        public void addDegreeToArrayDegree(int degree) {
+            this.degree.add(degree);
         }
 
         private int numberOfActiveGear = -1;

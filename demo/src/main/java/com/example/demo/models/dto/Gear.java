@@ -1,5 +1,4 @@
 package com.example.demo.models.dto;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,20 +9,24 @@ public class Gear {
     List<Hole> holes = new ArrayList<>();
     private final int numberOfHoles;
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 
     public int getRadius() {
         return radius;
     }
+    public void setXY(int x, int y) {
+        this.x = x + radius / 2;
+        this.y = y + radius / 2;
+    }
 
-    private final int x;
-    private final int y;
+    private  float x;
+    private  float y;
     private final int radius;
     public List<Integer> getDownNeighbours() {
         return downNeighbours;
@@ -41,10 +44,9 @@ public class Gear {
         this.upperNeighbours = upperNeighbours;
     }
 
-    //ArrayList<Integer> neighbours;
     List<Integer> downNeighbours;
     List<Integer> upperNeighbours;
-    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, int x, int y, int radius,
+    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, float x, float y, int radius,
                 List<Integer> downNeighbours, List<Integer> upperNeighbours) {
         this.numberOfHoles = numberOfHoles;
         this.isLast = isLast;
@@ -92,7 +94,7 @@ public class Gear {
         return isFirst;
     }
 
-    protected class Hole {
+    public class Hole {
         private final int capacity;
         private int degree;
         private boolean isFree = true;
@@ -114,7 +116,7 @@ public class Gear {
         }
 
         public void setDegree(int degree) {
-            this.degree = degree % 360;
+            this.degree = (360 + degree) % 360;
         }
 
         public boolean isFree() {

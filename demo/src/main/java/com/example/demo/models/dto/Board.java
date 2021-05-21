@@ -1,6 +1,5 @@
 package com.example.demo.models.dto;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,10 +56,10 @@ public class Board {
             extractBallsFromLastGear(activeGear, changingGear);
             putBallsInFirstGear(activeGear, changingGear);
 
-            for (int indexDownNeighbour : changingGear.getDownNeighbours()) {
+            for (Integer indexDownNeighbour : changingGear.getDownNeighbours()) {
                 connectionHoles(changingGear, this.gears.get(indexDownNeighbour));
             }
-            for (int indexUpperNeighbour : changingGear.getUpperNeighbours()) {
+            for (Integer indexUpperNeighbour : changingGear.getUpperNeighbours()) {
                 connectionHoles(this.gears.get(indexUpperNeighbour), changingGear);
             }
 
@@ -83,11 +82,9 @@ public class Board {
                         this.getRightGutter().setHowManyBalls(getRightGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
                     }
                     holeOfChangingGear.setFree(false);
-                    changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
                 }
             }
-            List<Gear> arrayOfGears = this.getGears();
-            arrayOfGears.set(activeGear, changingGear);
+
         }
     }
 
@@ -109,13 +106,13 @@ public class Board {
     private boolean connectionHoleWithGearsCenter(Gear upperGear, Gear downGear, Gear.Hole upperHole) {
         int upperRadius = upperGear.getRadius();
         int downRadius = downGear.getRadius();
-        int sumRadius = upperRadius + downRadius;
+        double sumRadius = (upperRadius + downRadius) * 1.1;
         double deg = 90 - upperHole.getDegree();
         double x = sumRadius * Math.cos(Math.toRadians(deg));
         double y = sumRadius * Math.sin(Math.toRadians(deg));
-        int mistake = 10;
+        double mistake = sumRadius * 0.1;
         x += upperGear.getX();
-        y += upperGear.getY();
+        y = upperGear.getY() - y;
         double dist = Math.sqrt(Math.pow((x - downGear.getX()), 2) + Math.pow((y - downGear.getY()), 2));
         return dist <= mistake;
     }
@@ -124,14 +121,13 @@ public class Board {
         for (Gear.Hole holeUpperGear : upperGear.getHoles()) {
             if (!holeUpperGear.isFree() && connectionHoleWithGearsCenter(upperGear, downGear, holeUpperGear)) {
                 for (Gear.Hole holeDownGear : downGear.getHoles()) {
-                    if (holeDownGear.isFree()
-                            && checkDegreeEquals(holeUpperGear, holeDownGear, upperGear.getX(), downGear.getX())) {
-                        holeDownGear.setFree(false);
-                        holeUpperGear.setFree(true);
-                        break;
+                    if (holeDownGear.isFree()) {
+                        if (checkDegreeEquals(holeUpperGear, holeDownGear, upperGear.getX(), downGear.getX())) {
+                            holeDownGear.setFree(false);
+                            holeUpperGear.setFree(true);
+                        }
                     }
                 }
-                break;
             }
         }
     }
@@ -141,8 +137,13 @@ public class Board {
             return upperGearHole.getDegree() < 180 && downGearHole.getDegree() > 180 &&
                     upperGearHole.getDegree() == downGearHole.getDegree() - 180;
         }
+
         return upperGearHole.getDegree() > 180 && downGearHole.getDegree() < 180 &&
                 downGearHole.getDegree() == upperGearHole.getDegree() - 180;
+    }
+
+    public boolean isAllBallsInPot() {
+        return pot.howManyBalls == leftGutter.getHowManyBallsStart() + rightGutter.getHowManyBallsStart();
     }
 
     public int getStep() {
@@ -155,6 +156,7 @@ public class Board {
 
         private int degree = 60;
         private int howManyBalls = 6;
+        private final int howManyBallsStart = 6;
 
         public Gutter(int degree) {
             this.degree = degree;
@@ -174,6 +176,10 @@ public class Board {
 
         public void setHowManyBalls(int howManyBalls) {
             this.howManyBalls = howManyBalls;
+        }
+
+        public int getHowManyBallsStart() {
+            return howManyBallsStart;
         }
     }
 
