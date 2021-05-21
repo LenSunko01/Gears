@@ -1,5 +1,6 @@
 package com.example.demo.dao.gamestate;
 
+import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
 import org.springframework.stereotype.Repository;
 
@@ -36,6 +37,21 @@ public class GameStateDaoImpl implements GameStateDao {
     public GameState updateGameState(Long id, GameState newGameState) {
         gameStateStorage.replace(id, newGameState);
         return newGameState;
+    }
+
+    /* concurrency! */
+    @Override
+    public GameState updateBoardInGameState(Long id, GameState.CurrentPlayer player, Board board) {
+        var gameState = gameStateStorage.get(id);
+        if (player.equals(GameState.CurrentPlayer.FIRSTPLAYER)) {
+            gameState.setFirstPlayerHasInitializedBoard(true);
+            gameState.setFirstPlayerBoard(board);
+        } else {
+            gameState.setSecondPlayerHasInitializedBoard(true);
+            gameState.setSecondPlayerBoard(board);
+        }
+        gameStateStorage.replace(id, gameState);
+        return gameStateStorage.get(id);
     }
 
     @Override
