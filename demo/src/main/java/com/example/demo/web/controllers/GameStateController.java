@@ -34,6 +34,7 @@ public class GameStateController {
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 
+    // Get /game
     @PostMapping("/get-game")
     ResponseEntity<GameState> gameState(
             @RequestParam Long id, @RequestParam String token, @RequestParam GameState.CurrentPlayer currentPlayer
@@ -55,6 +56,7 @@ public class GameStateController {
         return keepPolling(id, token, currentPlayer);
     }
 
+    // game/{id}
     @PostMapping("/update-game/{id}")
     ResponseEntity<String> updateGameState(
             @RequestHeader HttpHeaders headers, @PathVariable Long id, @RequestBody GameState newGameState
@@ -69,6 +71,8 @@ public class GameStateController {
         return ResponseEntity.ok("Game updated");
     }
 
+    // token -> header
+    // init/{id}/{currentPlayer}
     @PostMapping("/init")
     ResponseEntity<GameState> initBoard(
             @RequestParam Long id,

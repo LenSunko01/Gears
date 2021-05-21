@@ -7,6 +7,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 public class User {
+    public static class UserInformation {
+        public String token;
+        public Long id;
+        public UserInformation(String token, Long id) {
+            this.token = token;
+            this.id = id;
+        }
+    }
 
     private Long id;
     private String username;

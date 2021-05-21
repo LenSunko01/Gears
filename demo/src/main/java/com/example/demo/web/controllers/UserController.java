@@ -1,17 +1,26 @@
 package com.example.demo.web.controllers;
 
-import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-
 import com.example.demo.models.dto.User;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
-import com.example.demo.web.exceptions.*;
+import com.example.demo.web.exceptions.AuthenticationException;
+import com.example.demo.web.exceptions.InvalidPasswordException;
+import com.example.demo.web.exceptions.InvalidUsernameException;
+import com.example.demo.web.exceptions.UserNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+
+import static com.example.demo.web.controllers.ControllersConstants.*;
 
 @RestController
 public class UserController {
@@ -30,96 +39,149 @@ public class UserController {
         this.loginService = loginService;
     }
 
-    public static class UserInformation {
-        public String token;
-        public Long id;
-        public UserInformation(String token, Long id) {
-            this.token = token;
-            this.id = id;
-        }
-    }
-
     @GetMapping("/users")
-    DeferredResult<Map<String, Long>> getAllUsers() {
-        logger.info("Received get all users request");
-        DeferredResult<Map<String, Long>> output = new DeferredResult<>(100L, Collections.emptyList());
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            var list = userService.getAll();
-            output.setResult(list);
+    DeferredResult<ResponseEntity<Map<String, Long>>> getAllUsers() {
+        logger.info("Received GET users request");
+        DeferredResult<ResponseEntity<Map<String, Long>>> output = new DeferredResult<>(getUsersTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET users request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET users request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
         });
 
-        logger.info("Thread freed");
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing GET users in separate thread");
+            var list = userService.getAll();
+            logger.info("Got map with all users for GET users request");
+            output.setResult(ResponseEntity.ok(list));
+            logger.info("Set map with all users for GET users request");
+            logger.info("Thread freed");
+        });
+
         return output;
     }
 
     @GetMapping("/random")
-    DeferredResult<Map.Entry<String, Long>> randomUser() {
-        logger.info("Received random user request");
-        DeferredResult<Map.Entry<String, Long>> output = new DeferredResult<>(5L, new UserNotFoundException());
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            var user = userService.getRandomUser();
-            output.setResult(user);
+    DeferredResult<ResponseEntity<Map.Entry<String, Long>>> randomUser() {
+        logger.info("Received GET random user request");
+        DeferredResult<ResponseEntity<Map.Entry<String, Long>>> output = new DeferredResult<>(getRandomUserTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET random user request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET random user request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
         });
 
-        logger.info("Thread freed");
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing GET random user request in separate thread");
+            var user = userService.getRandomUser();
+            logger.info("Got random user for the request");
+            output.setResult(ResponseEntity.ok(user));
+            logger.info("Set random user");
+            logger.info("Thread freed");
+        });
+
         return output;
     }
 
-    private UserInformation getUserInformationByMapEntry(Map.Entry<String, Long> userEntry) {
-        return new UserInformation(userEntry.getKey(), userEntry.getValue());
-    }
-
     @PostMapping("/register")
-    public UserInformation registerUser(@RequestParam String username, @RequestParam String password) {
-        return getUserInformationByMapEntry(registerService.registerUser(username, password));
+    public DeferredResult<ResponseEntity<User.UserInformation>> registerUser(@RequestParam String username, @RequestParam String password) {
+        logger.info("Received POST register user request");
+        DeferredResult<ResponseEntity<User.UserInformation>> output = new DeferredResult<>(postRegisterUserTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("POST register user request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing POST register user request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing POST register user request in separate thread");
+            try {
+                var userEntry = registerService.registerUser(username, password);
+                logger.info("Registered user");
+                output.setResult(ResponseEntity.ok(userEntry));
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing register request: " + e.getMessage());
+            }
+            logger.info("Thread freed");
+        });
+
+        return output;
     }
 
     @PostMapping("/login")
-    public UserInformation loginUser(@RequestParam String username, @RequestParam String password) {
-        return getUserInformationByMapEntry(loginService.loginUser(username, password));
+    public DeferredResult<ResponseEntity<User.UserInformation>> loginUser(@RequestParam String username, @RequestParam String password) {
+        logger.info("Received POST login user request");
+        DeferredResult<ResponseEntity<User.UserInformation>> output = new DeferredResult<>(postLoginUserTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("POST login user request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing POST login user request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing POST login user request in separate thread");
+            try {
+                var userEntry = loginService.loginUser(username, password);
+                logger.info("User logged in");
+                output.setResult(ResponseEntity.ok(userEntry));
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing login request: " + e.getMessage());
+            }
+            logger.info("Thread freed");
+        });
+
+        return output;
     }
 
-    @PostMapping("/get-user")
-    DeferredResult<User> getUser(@RequestParam Long id, @RequestParam String token) {
-        logger.info("Received get user by ID request");
-        DeferredResult<User> output = new DeferredResult<>(100L, new UserNotFoundException(id));
+    @GetMapping("/user/{id}")
+    DeferredResult<ResponseEntity<User>> getUser(@RequestHeader HttpHeaders headers, @PathVariable Long id) {
+        logger.info("Received GET user by ID request");
+        var token = headers.getFirst("token");
+        DeferredResult<ResponseEntity<User>> output = new DeferredResult<>(getUserTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET user request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET user request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
                 User user = userService.getUserById(id, token);
-                output.setResult(user);
-            } catch (AuthenticationException e) {
-                output.setErrorResult(e);
+                logger.info("Got user for GET user request");
+                output.setResult(ResponseEntity.ok(user));
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET user request: " + e.getMessage());
             }
+            logger.info("Thread freed");
         });
 
-        logger.info("Thread freed");
         return output;
-    }
-
-    public static class GameInfo {
-        public Long gameId;
-        public boolean isFirstPlayer;
-        public GameInfo(Long gameId, boolean isFirstPlayer) {
-            this.gameId = gameId;
-            this.isFirstPlayer = isFirstPlayer;
-        }
     }
 
     /*
     matches opponents and returns game ID and
     if user is supposed to make the first move true, otherwise false
      */
+    // /find/opponent
     @PostMapping("/find-opponent")
     DeferredResult<Map.Entry<Long, Boolean>> newUser(@RequestParam String username, @RequestParam String token) {
         return userService.findOpponent(username, token);
     }
 
+    // user/{id}/name
+    // id -pathvar newUsername - requestParam
     @PutMapping("/update-username")
     DeferredResult<User> updateUsername(
             @RequestParam String newUsername, @RequestParam Long id, @RequestParam String token

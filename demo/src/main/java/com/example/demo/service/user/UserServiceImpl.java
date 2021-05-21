@@ -52,6 +52,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map.Entry<String, Long> getRandomUser() {
         Map<String, Long> map = allUsers.getAll();
+        if (map.isEmpty()) {
+            return null;
+        }
         var list = new ArrayList<>(map.entrySet());
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));

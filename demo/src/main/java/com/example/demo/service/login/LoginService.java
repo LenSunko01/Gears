@@ -1,7 +1,9 @@
 package com.example.demo.service.login;
 
+import com.example.demo.models.dto.User;
+
 import java.util.Map;
 
 public interface LoginService {
-    Map.Entry<String, Long> loginUser(String username, String password);
+    User.UserInformation loginUser(String username, String password);
 }

@@ -1,6 +1,7 @@
 package com.example.demo.service.login;
 
 import com.example.demo.dao.allusers.AllUsersDao;
+import com.example.demo.models.dto.User;
 import com.example.demo.service.token.TokenService;
 import com.example.demo.web.exceptions.InvalidUsernameException;
 import com.example.demo.web.exceptions.InvalidPasswordException;
@@ -20,7 +21,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public Map.Entry<String, Long> loginUser(String username, String password) {
+    public User.UserInformation loginUser(String username, String password) {
         if (!allUsers.checkUsernameExists(username)) {
             throw new InvalidUsernameException("Could not find the login. " +
                     "I think you made a typo. Or you're just messing with me (please don't)");
@@ -32,6 +33,6 @@ public class LoginServiceImpl implements LoginService {
 
         var token = tokenService.generateNewToken();
         allUsers.updateToken(token, username);
-        return new AbstractMap.SimpleEntry<>(token, allUsers.getIdByUsername(username));
+        return new User.UserInformation(token, allUsers.getIdByUsername(username));
     }
 }
