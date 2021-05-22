@@ -1,13 +1,11 @@
 package com.example.demo.service.registration;
 
 import com.example.demo.dao.allusers.AllUsersDao;
+import com.example.demo.models.dto.User;
 import com.example.demo.service.token.TokenService;
-import com.example.demo.web.exceptions.InvalidUsernameException;
 import com.example.demo.web.exceptions.InvalidPasswordException;
+import com.example.demo.web.exceptions.InvalidUsernameException;
 import org.springframework.stereotype.Service;
-
-import java.util.AbstractMap;
-import java.util.Map;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
@@ -23,13 +21,13 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public Map.Entry<String, Long> registerUser(String username, String password) {
+    public User.UserInformation registerUser(String username, String password) {
         checkLoginIsValid(username);
         checkPasswordIsValid(password);
 
         var token = tokenService.generateNewToken();
         var user = allUsers.addUser(username, password, token);
-        return new AbstractMap.SimpleEntry<>(token, allUsers.getIdByUsername(username));
+        return new User.UserInformation(token, allUsers.getIdByUsername(username));
     }
 
     public void checkLoginIsValid(String username) {

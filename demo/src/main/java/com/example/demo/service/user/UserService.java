@@ -13,13 +13,13 @@ public interface UserService {
 
     Map<String, Long> getAll();
 
-    DeferredResult<Map.Entry<Long, Boolean>> findOpponent(String username, String token);
-
     User updateUsername(Long id, String newUsername, String token);
 
     User updatePassword(Long id, String newPassword, String token);
 
     User updatePoints(Long id, Long newPoints, String token);
+
+    User getUserByUsername(String username, String token);
 
     User updateUsername(String username, String newUsername, String token);
 

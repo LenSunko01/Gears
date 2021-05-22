@@ -21,9 +21,6 @@ public class UserServiceImpl implements UserService {
     private final AllUsersDao allUsers;
     private final RegistrationService registrationService;
     private final GameStateService gameStateService;
-    // Key is user who wants to play, value is his future opponent
-    private final Map<DeferredResult<Map.Entry<Long, Boolean>>, User> usersReadyToPlay =
-            new ConcurrentHashMap<>();
 
     public UserServiceImpl(
             AllUsersDao allUsers,
@@ -52,6 +49,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map.Entry<String, Long> getRandomUser() {
         Map<String, Long> map = allUsers.getAll();
+        if (map.isEmpty()) {
+            return null;
+        }
         var list = new ArrayList<>(map.entrySet());
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
@@ -83,6 +83,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserByUsername(String username, String token) {
+        var user = allUsers.getUserByUsername(username);
+        var id = user.getId();
+        validateToken(id, token);
+        return user;
+    }
+
+    @Override
     public User updateUsername(String username, String newUsername, String token) {
         var id = allUsers.getUserByUsername(username).getId();
         validateToken(id, token);
@@ -103,47 +111,5 @@ public class UserServiceImpl implements UserService {
         var id = allUsers.getUserByUsername(username).getId();
         validateToken(id, token);
         return allUsers.updatePointsById(id, newPoints);
-    }
-
-    private void matchOpponents() {
-        if (this.usersReadyToPlay.size() < 2) {
-            return;
-        }
-
-        var entries = this.usersReadyToPlay.entrySet();
-
-        while (entries.size() > 1) {
-            Iterator<Map.Entry<DeferredResult<Map.Entry<Long, Boolean>>, User>> it = entries.iterator();
-            var firstUserEntry = it.next();
-            var firstUser = firstUserEntry.getValue();
-            var secondUserEntry = it.next();
-            var secondUser = secondUserEntry.getValue();
-
-            var gameId = gameStateService.setGame(firstUser, secondUser);
-            var firstPlayerGameInfo = new AbstractMap.SimpleEntry<>(gameId, true);
-            var secondPlayerGameInfo = new AbstractMap.SimpleEntry<>(gameId, false);
-            firstUserEntry.getKey().setResult(firstPlayerGameInfo);
-            secondUserEntry.getKey().setResult(secondPlayerGameInfo);
-
-            usersReadyToPlay.remove(firstUserEntry.getKey());
-            usersReadyToPlay.remove(secondUserEntry.getKey());
-        }
-    }
-
-    public DeferredResult<Map.Entry<Long, Boolean>> findOpponent(String username, String token) {
-        final DeferredResult<Map.Entry<Long, Boolean>> result = new DeferredResult<>(10000L, new OpponentNotFoundException());
-        var user = allUsers.getUserByUsername(username);
-        var id = user.getId();
-        try {
-            validateToken(id, token);
-        } catch (AuthenticationException e) {
-            result.setErrorResult(e);
-            return result;
-        }
-        this.usersReadyToPlay.put(result, user);
-        result.onCompletion(() -> usersReadyToPlay.remove(result));
-        result.onTimeout(() -> usersReadyToPlay.remove(result));
-        matchOpponents();
-        return result;
     }
 }
