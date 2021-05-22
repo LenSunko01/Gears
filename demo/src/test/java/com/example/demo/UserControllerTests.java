@@ -1,25 +1,32 @@
 package com.example.demo;
 
+import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
+import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
 import com.example.demo.web.controllers.UserController;
+import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
 import org.mockito.internal.stubbing.answers.Returns;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockAsyncContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import javax.servlet.AsyncListener;
-import java.util.AbstractMap;
-import java.util.HashMap;
+import java.util.*;
 
 import static com.example.demo.web.controllers.ControllersConstants.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -42,6 +49,9 @@ public class UserControllerTests {
 
     @MockBean
     private LoginService loginService;
+
+    @MockBean
+    private GameStateService gameStateService;
 
     @Test
     public void getUsersTest() throws Exception {
@@ -245,5 +255,84 @@ public class UserControllerTests {
         mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isRequestTimeout()).andDo(print())
                 .andExpect(jsonPath("$").value("Request timeout occurred."));
+    }
+
+    @Test
+    public void findOpponentTwoPlayersOkTest() throws Exception {
+        var header = new HttpHeaders();
+        header.add("token", "correctToken");
+        when(gameStateService.setGame(any(User.class), any(User.class))).thenReturn(1L);
+        when(userService.getUserByUsername("Katya", "correctToken"))
+                .thenReturn(new User(2L, "Katya", "123",32L));
+        when(userService.getUserByUsername("Maksim", "correctToken"))
+                .thenReturn(new User(2L, "Maksim", "123",32L));
+        var result1 = mockMvc.perform(post("/find/opponent")
+                .param("username", "Katya")
+                .headers(header))
+                .andExpect(request().asyncStarted()).andReturn();
+        var result2 = mockMvc.perform(post("/find/opponent")
+                .headers(header)
+                .param("username", "Maksim"))
+                .andExpect(request().asyncStarted()).andReturn();
+        mockMvc.perform(asyncDispatch(result1)).andDo(print()).andExpect(status().isOk());
+        String result1Str = result1.getResponse().getContentAsString();
+        mockMvc.perform(asyncDispatch(result2)).andDo(print()).andExpect(status().isOk());
+        String result2Str = result1.getResponse().getContentAsString();
+        assert(result1Str.equals("{\"1\":false}") || result1Str.equals("{\"1\":true}"));
+        assert(result2Str.equals("{\"1\":false}") || result2Str.equals("{\"1\":true}"));
+        if (result1Str.equals("{\"1\":false}")) {
+            assert(result2Str.equals("{\"1\":false}"));
+        } else {
+            assert(result2Str.equals("{\"1\":true}"));
+        }
+    }
+
+    @RepeatedTest(10)
+    public void findOpponentMultiplePlayersOkTest() throws Exception {
+        when(gameStateService.setGame(any(User.class), any(User.class))).thenAnswer(new Answer() {
+            private long count = 0L;
+
+            public Object answer(InvocationOnMock invocation) {
+                return count++;
+            }
+        });
+        var header = new HttpHeaders();
+        header.add("token", "correctToken");
+        String username = "t";
+        var list = new ArrayList<MvcResult>();
+        for (var i = 0; i < 100; i++) {
+            when(userService.getUserByUsername(username, "correctToken"))
+                    .thenReturn(new User(2L, username, "123",32L));
+            var res = mockMvc.perform(post("/find/opponent")
+                    .param("username", username)
+                    .headers(header))
+                    .andReturn();
+            list.add(res);
+            username += "t";
+        }
+        var map = new HashMap<Integer, ArrayList<String>>();
+        for (var result : list) {
+            mockMvc.perform(asyncDispatch(result)).andExpect(status().isOk());
+            String resultStr = result.getResponse().getContentAsString();
+
+            String gameId = resultStr.substring(resultStr.indexOf("{") + 1);
+            gameId = gameId.substring(0, gameId.indexOf(":"));
+            var id = Integer.valueOf(gameId.substring( 1, gameId.length() - 1 ));
+
+            String playerStatus = resultStr.substring(resultStr.indexOf(":") + 1);
+            playerStatus = playerStatus.substring(0, playerStatus.indexOf("}"));
+
+            if (!map.containsKey(id)) {
+                var newList = new ArrayList();
+                newList.add(playerStatus);
+                map.put(id, newList);
+            } else {
+                map.get(id).add(playerStatus);
+            }
+        }
+        for (var entry : map.entrySet()) {
+            assert(entry.getValue().size() == 2);
+            assert(entry.getValue().contains("true") && entry.getValue().contains("false"));
+        }
     }
 }

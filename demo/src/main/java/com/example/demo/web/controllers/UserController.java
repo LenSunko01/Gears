@@ -1,13 +1,11 @@
 package com.example.demo.web.controllers;
 
 import com.example.demo.models.dto.User;
+import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
-import com.example.demo.web.exceptions.AuthenticationException;
-import com.example.demo.web.exceptions.InvalidPasswordException;
-import com.example.demo.web.exceptions.InvalidUsernameException;
-import com.example.demo.web.exceptions.UserNotFoundException;
+import com.example.demo.web.exceptions.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpHeaders;
@@ -16,9 +14,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.Collections;
+import java.util.AbstractMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.example.demo.web.controllers.ControllersConstants.*;
 
@@ -28,15 +30,21 @@ public class UserController {
     private final UserService userService;
     private final RegistrationService registerService;
     private final LoginService loginService;
+    private final GameStateService gameStateService;
+    private final Lock queueLock = new ReentrantLock();
+    // Key is user who wants to play, value is his future opponent
+    private final Map<DeferredResult<Map.Entry<Long, Boolean>>, User> usersReadyToPlay =
+            new ConcurrentHashMap<>();
 
     UserController(
             UserService userService,
             RegistrationService registerService,
-            LoginService loginService
-    ) {
+            LoginService loginService,
+            GameStateService gameStateService) {
         this.userService = userService;
         this.registerService = registerService;
         this.loginService = loginService;
+        this.gameStateService = gameStateService;
     }
 
     @GetMapping("/users")
@@ -174,10 +182,85 @@ public class UserController {
     matches opponents and returns game ID and
     if user is supposed to make the first move true, otherwise false
      */
-    // /find/opponent
-    @PostMapping("/find-opponent")
-    DeferredResult<Map.Entry<Long, Boolean>> newUser(@RequestParam String username, @RequestParam String token) {
-        return userService.findOpponent(username, token);
+    @PostMapping("/find/opponent")
+    DeferredResult<Map.Entry<Long, Boolean>> findOpponent(@RequestHeader HttpHeaders headers, @RequestParam String username) {
+        logger.info("Received GET find opponent request");
+        var token = headers.getFirst("token");
+        DeferredResult<Map.Entry<Long, Boolean>> output = new DeferredResult<>(postFindOpponentTimeoutInMilliseconds);
+        output.onCompletion(() -> {
+            logger.info("POST find opponent request completed");
+            try {
+                queueLock.lock();
+                usersReadyToPlay.remove(output);
+            } finally {
+                 queueLock.unlock();
+            }
+        });
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing POST find opponent request");
+            try {
+                queueLock.lock();
+                usersReadyToPlay.remove(output);
+            } finally {
+                queueLock.unlock();
+            }
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            User user;
+            try {
+                user = userService.getUserByUsername(username, token);
+                logger.info("Putting opponents to matching queue");
+                try {
+                    queueLock.lock();
+                    usersReadyToPlay.put(output, user);
+                } finally {
+                    queueLock.unlock();
+                }
+                logger.info("Trying to match opponents");
+                matchOpponents();
+            } catch (Exception e) {
+                logger.info("Exception while executing POST find opponent request: " + e.getMessage());
+                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(e.getMessage()));
+            }
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    private void matchOpponents() {
+        try {
+            queueLock.lock();
+            if (this.usersReadyToPlay.size() < 2) {
+                return;
+            }
+
+            var entries = this.usersReadyToPlay.entrySet();
+
+            while (entries.size() > 1) {
+                Iterator<Map.Entry<DeferredResult<Map.Entry<Long, Boolean>>, User>> it = entries.iterator();
+                var firstUserEntry = it.next();
+                var firstUser = firstUserEntry.getValue();
+                var secondUserEntry = it.next();
+                var secondUser = secondUserEntry.getValue();
+
+                var gameId = gameStateService.setGame(firstUser, secondUser);
+                var firstPlayerGameInfo = new AbstractMap.SimpleEntry<>(gameId, true);
+                var secondPlayerGameInfo = new AbstractMap.SimpleEntry<>(gameId, false);
+                firstUserEntry.getKey().setResult(firstPlayerGameInfo);
+                secondUserEntry.getKey().setResult(secondPlayerGameInfo);
+
+                usersReadyToPlay.remove(firstUserEntry.getKey());
+                usersReadyToPlay.remove(secondUserEntry.getKey());
+            }
+        } finally {
+            queueLock.unlock();
+        }
     }
 
     // user/{id}/name
