@@ -1,13 +1,15 @@
 package com.example.demo.models.dto;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Gear {
     private int degree;
-    private final boolean isLast;
-    private final boolean isFirst;
+    private boolean isLast;
+    private boolean isFirst;
     List<Hole> holes = new ArrayList<>();
-    private final int numberOfHoles;
+    private int numberOfHoles;
 
     public float getX() {
         return x;
@@ -27,7 +29,7 @@ public class Gear {
 
     private  float x;
     private  float y;
-    private final int radius;
+    private int radius;
     public List<Integer> getDownNeighbours() {
         return downNeighbours;
     }
@@ -66,6 +68,10 @@ public class Gear {
         }
     }
 
+    public Gear() {
+
+    }
+
     public int getNumberOfHoles() {
         return numberOfHoles;
     }
@@ -86,25 +92,41 @@ public class Gear {
         return holes;
     }
 
+    @JsonProperty(value="isLast")
     public boolean isLast() {
         return isLast;
     }
 
+    @JsonProperty(value="isLast")
+    public void setIsLast(boolean val) {
+        isLast = val;
+    }
+
+    @JsonProperty(value="isFirst")
     public boolean isFirst() {
         return isFirst;
     }
 
-    public class Hole {
-        private final int capacity;
+    @JsonProperty(value="isFirst")
+    public void setIsFirst(boolean val) {
+        isFirst = val;
+    }
+
+    public static class Hole {
+        private int capacity;
         private int degree;
         private boolean isFree = true;
         private int numberOfBall;
-        private final int numberOfHole;
+        private int numberOfHole;
 
         public Hole(int numberOfHole) {
             capacity = 1;
             degree = 0;
             this.numberOfHole = numberOfHole;
+        }
+
+        public Hole() {
+
         }
 
         public int getCapacity() {
@@ -119,10 +141,12 @@ public class Gear {
             this.degree = (360 + degree) % 360;
         }
 
+        @JsonProperty(value="isFree")
         public boolean isFree() {
             return isFree;
         }
 
+        @JsonProperty(value="isFree")
         public void setFree(boolean free) {
             isFree = free;
         }

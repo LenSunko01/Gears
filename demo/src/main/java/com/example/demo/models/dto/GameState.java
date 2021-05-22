@@ -130,8 +130,10 @@ public class GameState {
         }
 
         private int numberOfActiveGear = -1;
-        @JsonProperty("currentPlayer")
         private CurrentPlayer currentPlayer;
+
+        public void setCurrentPlayer(CurrentPlayer player) { this.currentPlayer = player; };
+
         private ArrayList<Integer> degree;
     }
 

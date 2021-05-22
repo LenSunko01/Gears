@@ -26,11 +26,11 @@ public class GameStateController {
         this.gameStateService = gameStateService;
     }
 
-    @GetMapping("/game/{id}")
+    @GetMapping("/game/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<GameState>> gameState(
             @RequestHeader HttpHeaders headers,
             @PathVariable Long id,
-            @RequestParam GameState.CurrentPlayer currentPlayer
+            @PathVariable GameState.CurrentPlayer currentPlayer
     ) {
         logger.info("Received GET game state by ID request");
         var token = headers.getFirst("token");
@@ -125,7 +125,9 @@ public class GameStateController {
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
+                logger.info(board.getGears().get(0).isFirst());
                 var res = gameStateService.updateBoardById(id, token, currentPlayer, board);
+                logger.info(res.getFirstPlayerBoard().equals(board));
                 output.setResult(ResponseEntity.ok(res));
                 logger.info("Completed POST init game request");
             } catch (Exception e) {
