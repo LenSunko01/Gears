@@ -33,7 +33,7 @@ public class UserController {
     private final GameStateService gameStateService;
     private final Lock queueLock = new ReentrantLock();
     // Key is user who wants to play, value is his future opponent
-    private final Map<DeferredResult<Map.Entry<Long, Boolean>>, User> usersReadyToPlay =
+    private final ConcurrentHashMap<DeferredResult<Map.Entry<Long, Boolean>>, User> usersReadyToPlay =
             new ConcurrentHashMap<>();
 
     UserController(

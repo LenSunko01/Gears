@@ -13,7 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static com.example.demo.web.controllers.ControllersConstants.*;
 
@@ -25,6 +28,7 @@ public class GameStateController {
     public GameStateController(GameStateService gameStateService) {
         this.gameStateService = gameStateService;
     }
+    private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
 
     @GetMapping("/game/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<GameState>> gameState(
@@ -42,20 +46,32 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        ForkJoinPool.commonPool().submit(() -> {
+        logger.info(Thread.currentThread().getId());
+
+        workerPool.submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                logger.info("Trying to get game state");
+                logger.info(Thread.currentThread().getId());
+                logger.info("Trying to get game state, before while");
+                logger.info(currentPlayer);
                 var res = gameStateService.getStateById(id, token);
                 while (!(res.getCurrentPlayer().equals(currentPlayer)
                         && res.isFirstPlayerHasInitializedBoard()
                         && res.isSecondPlayerHasInitializedBoard())
                 ) {
-                    logger.info("Game not ready yet, wait for some time");
+
+                    logger.info(Thread.currentThread().getId());
+                    logger.info(res.getCurrentPlayer());
+                    logger.info(res.isFirstPlayerHasInitializedBoard());
+                    logger.info(res.isSecondPlayerHasInitializedBoard());
+                    logger.info(currentPlayer);
+                    logger.info("Game not ready yet, wait for some time " + currentPlayer);
                     try {
-                        Thread.sleep(3000);
+                        Thread.sleep(500);
                     } catch (InterruptedException ignored) {
+                        logger.info("------------------------------Exception-------------------", ignored);
                     }
+                    logger.info("-------------------Woke up from sleep " + currentPlayer);
                     res = gameStateService.getStateById(id, token);
                 }
                 logger.info("Set game");
@@ -78,7 +94,7 @@ public class GameStateController {
             @PathVariable GameState.CurrentPlayer currentPlayer,
             @RequestBody GameState newGameState
     ) {
-        logger.info("Received POST game state by ID request");
+        logger.info("Received POST game state by ID request " + currentPlayer);
         var token = headers.getFirst("token");
         DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(postGameTimeoutInMilliseconds);
         output.onCompletion(() -> logger.info("POST game by ID request completed"));
@@ -88,7 +104,7 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        ForkJoinPool.commonPool().submit(() -> {
+        workerPool.submit(() -> {
             logger.info("Processing in separate thread");
             try {
                 gameStateService.updateStateById(id, token, newGameState);
@@ -112,7 +128,7 @@ public class GameStateController {
             @PathVariable GameState.CurrentPlayer currentPlayer,
             @RequestBody Board board
     ) {
-        logger.info("Received POST init game state by ID request");
+        logger.info("!!!!!!!!!!!!!Received POST init game state by ID request " + currentPlayer);
         var token = headers.getFirst("token");
         DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(initGameTimeoutInMilliseconds);
         output.onCompletion(() -> logger.info("POST init game by ID request completed"));
@@ -122,7 +138,7 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        ForkJoinPool.commonPool().submit(() -> {
+        workerPool.submit(() -> {
             logger.info("Processing in separate thread");
             try {
                 logger.info(board.getGears().get(0).isFirst());
@@ -157,7 +173,7 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        ForkJoinPool.commonPool().submit(() -> {
+        workerPool.submit(() -> {
             logger.info("Processing in separate thread");
             try {
                 gameStateService.deleteGameState(id, token);

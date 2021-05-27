@@ -298,7 +298,7 @@ public class UserControllerTests {
         });
         var header = new HttpHeaders();
         header.add("token", "correctToken");
-        String username = "t";
+        String username = String.valueOf(System.nanoTime());
         var list = new ArrayList<MvcResult>();
         for (var i = 0; i < 100; i++) {
             when(userService.getUserByUsername(username, "correctToken"))
