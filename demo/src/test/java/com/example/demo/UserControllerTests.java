@@ -287,7 +287,7 @@ public class UserControllerTests {
         }
     }
 
-    @RepeatedTest(10)
+    @RepeatedTest(50)
     public void findOpponentMultiplePlayersOkTest() throws Exception {
         when(gameStateService.setGame(any(User.class), any(User.class))).thenAnswer(new Answer() {
             private long count = 0L;
@@ -298,17 +298,19 @@ public class UserControllerTests {
         });
         var header = new HttpHeaders();
         header.add("token", "correctToken");
-        String username = String.valueOf(System.nanoTime());
+        int counter = 0;
+        String username = String.valueOf(counter);
         var list = new ArrayList<MvcResult>();
         for (var i = 0; i < 100; i++) {
-            when(userService.getUserByUsername(username, "correctToken"))
+            when(userService.getUserByUsername(anyString(), anyString()))
                     .thenReturn(new User(2L, username, "123",32L));
             var res = mockMvc.perform(post("/find/opponent")
                     .param("username", username)
                     .headers(header))
                     .andReturn();
             list.add(res);
-            username += "t";
+            counter++;
+            username = String.valueOf(counter);
         }
         var map = new HashMap<Integer, ArrayList<String>>();
         for (var result : list) {

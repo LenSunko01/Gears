@@ -66,16 +66,17 @@ public class GameStateControllerTests {
                 return gameState;
             }
         });
-        var result = mockMvc.perform(get("/game/{id}", 2L)
-                .headers(headerKatya)
-                .param("currentPlayer", String.valueOf(GameState.CurrentPlayer.FIRSTPLAYER)))
+
+        var result = mockMvc.perform(get("/game/{id}/player/{currentPlayer}",
+                2L, String.valueOf(GameState.CurrentPlayer.FIRSTPLAYER))
+                .headers(headerKatya))
                 .andExpect(request().asyncStarted()).andReturn();
         result.getAsyncResult();
         mockMvc.perform(asyncDispatch(result)).andDo(print()).andExpect(status().isOk());
 
-        result = mockMvc.perform(get("/game/{id}", 2L)
-                .headers(headerMaks)
-                .param("currentPlayer", String.valueOf(GameState.CurrentPlayer.SECONDPLAYER)))
+        result = mockMvc.perform(get("/game/{id}/player/{currentPlayer}",
+                2L, String.valueOf(GameState.CurrentPlayer.SECONDPLAYER))
+                .headers(headerMaks))
                 .andExpect(request().asyncStarted()).andReturn();
         // Trigger a timeout on the request
         MockAsyncContext ctx = (MockAsyncContext) result.getRequest().getAsyncContext();
@@ -87,9 +88,9 @@ public class GameStateControllerTests {
                 .andExpect(jsonPath("$").value("Request timeout occurred."));
 
         gameState.setCurrentPlayer(GameState.CurrentPlayer.SECONDPLAYER);
-        result = mockMvc.perform(get("/game/{id}", 2L)
-                .headers(headerMaks)
-                .param("currentPlayer", String.valueOf(GameState.CurrentPlayer.SECONDPLAYER)))
+        result = mockMvc.perform(get("/game/{id}/player/{currentPlayer}",
+                2L, String.valueOf(GameState.CurrentPlayer.SECONDPLAYER))
+                .headers(headerMaks))
                 .andExpect(request().asyncStarted()).andReturn();
 
         result.getAsyncResult();

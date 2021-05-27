@@ -73,6 +73,11 @@ public class GameStateController {
                     }
                     logger.info("-------------------Woke up from sleep " + currentPlayer);
                     res = gameStateService.getStateById(id, token);
+                    logger.info(output.isSetOrExpired());
+                    if (output.isSetOrExpired()) {
+                        logger.info("----------Request expired");
+                        break;
+                    }
                 }
                 logger.info("Set game");
                 output.setResult(ResponseEntity.ok(res));

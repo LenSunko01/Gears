@@ -184,11 +184,11 @@ public class UserController {
      */
     @PostMapping("/find/opponent")
     DeferredResult<Map.Entry<Long, Boolean>> findOpponent(@RequestHeader HttpHeaders headers, @RequestParam String username) {
-        logger.info("Received GET find opponent request");
+        logger.info("Received POST find opponent request");
         var token = headers.getFirst("token");
         DeferredResult<Map.Entry<Long, Boolean>> output = new DeferredResult<>(postFindOpponentTimeoutInMilliseconds);
         output.onCompletion(() -> {
-            logger.info("POST find opponent request completed");
+            logger.info("POST find opponent request completed for " + username);
             try {
                 queueLock.lock();
                 usersReadyToPlay.remove(output);
@@ -217,6 +217,7 @@ public class UserController {
                 try {
                     queueLock.lock();
                     usersReadyToPlay.put(output, user);
+                    logger.info(usersReadyToPlay.size());
                 } finally {
                     queueLock.unlock();
                 }
@@ -243,6 +244,10 @@ public class UserController {
             var entries = this.usersReadyToPlay.entrySet();
 
             while (entries.size() > 1) {
+                logger.info("---------------Queue size is " + entries.size());
+                for (var entry : entries) {
+                    logger.info(entry.getValue().getUsername() + " ");
+                }
                 Iterator<Map.Entry<DeferredResult<Map.Entry<Long, Boolean>>, User>> it = entries.iterator();
                 var firstUserEntry = it.next();
                 var firstUser = firstUserEntry.getValue();
@@ -255,8 +260,12 @@ public class UserController {
                 firstUserEntry.getKey().setResult(firstPlayerGameInfo);
                 secondUserEntry.getKey().setResult(secondPlayerGameInfo);
 
+                logger.info("---------------matched " +
+                        firstUserEntry.getValue().getUsername() + " and " +
+                        secondUserEntry.getValue().getUsername());
                 usersReadyToPlay.remove(firstUserEntry.getKey());
                 usersReadyToPlay.remove(secondUserEntry.getKey());
+                logger.info("---------------Queue size is " + entries.size());
             }
         } finally {
             queueLock.unlock();
