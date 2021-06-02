@@ -158,8 +158,8 @@ public class Board {
         }
 
         private int degree = 60;
-        private int howManyBalls = 6;
-        private final int howManyBallsStart = 6;
+        private int howManyBalls = 1;
+        private final int howManyBallsStart = 1;
 
         public Gutter(int degree) {
             this.degree = degree;

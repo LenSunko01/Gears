@@ -135,6 +135,7 @@ public class GameStateController {
     ) {
         logger.info("!!!!!!!!!!!!!Received POST init game state by ID request " + currentPlayer);
         var token = headers.getFirst("token");
+        logger.info("****************" + currentPlayer.toString() + " " +  token);
         DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(initGameTimeoutInMilliseconds);
         output.onCompletion(() -> logger.info("POST init game by ID request completed"));
         output.onTimeout(() -> {
@@ -162,11 +163,11 @@ public class GameStateController {
         return output;
     }
 
-    @DeleteMapping("/game/{id}")
+    @DeleteMapping("/game/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<String>> deleteGame(
             @RequestHeader HttpHeaders headers,
             @PathVariable Long id,
-            @RequestParam GameState.CurrentPlayer currentPlayer
+            @PathVariable GameState.CurrentPlayer currentPlayer
     ) {
         logger.info("Received DELETE game state by ID request");
         var token = headers.getFirst("token");
