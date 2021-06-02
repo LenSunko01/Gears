@@ -6,7 +6,6 @@ import com.example.demo.utils.SqliteUtils;
 import com.example.demo.web.controllers.UserController;
 import com.example.demo.web.exceptions.InvalidUsernameException;
 import com.example.demo.web.exceptions.UserNotFoundException;
-import net.bytebuddy.pool.TypePool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Primary;
@@ -16,7 +15,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,7 +34,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     private static final String GET_USER_BY_TOKEN = "select * from user_state where user_token = ?";
 
     private static final String INSERT_USER = "insert into user_state(user_login, user_password, " +
-            "user_token, points) values (?, ?, ?, ?)";
+            "user_token, points, total_games, games_won, games_lost) values (?, ?, ?, ?, ?, ?, ?)";
 
     private static final String GET_USER_BY_USER_ID = "select * from user_state where id = ?";
 
@@ -56,6 +54,12 @@ public class SqliteUserDaoImpl implements AllUsersDao {
 
     private static final String INSERT_POINTS_BY_USERNAME = "update user_state set points=? where user_login=?";
 
+    private static final String INSERT_TOTAL_GAMES_BY_ID = "update user_state set total_games=? where id=?";
+
+    private static final String INSERT_GAMES_WON_BY_ID = "update user_state set games_won=? where id=?";
+
+    private static final String INSERT_GAMES_LOST_BY_ID = "update user_state set games_lost=? where id=?";
+
     Connection conn;
 
     public SqliteUserDaoImpl(SqliteUtils utils) {
@@ -67,8 +71,10 @@ public class SqliteUserDaoImpl implements AllUsersDao {
                 rs.getLong("id"),
                 rs.getString("user_login"),
                 rs.getString("user_password"),
-                rs.getLong("points")
-        );
+                rs.getLong("points"),
+                rs.getLong("total_games"),
+                rs.getLong("games_won"),
+                rs.getLong("games_lost"));
     }
 
     @Override
@@ -102,13 +108,16 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public User addUser(String username, String password, String token) {
+    public User addUser(String username, String password, String token, Long points) {
         PreparedStatement addUserStmt;
         try {
             addUserStmt = conn.prepareStatement(INSERT_USER);
             addUserStmt.setString(1, username);
             addUserStmt.setString(2, password);
             addUserStmt.setString(3, token);
+            addUserStmt.setLong(4, points);
+            addUserStmt.setLong(4, 0);
+            addUserStmt.setLong(4, 0);
             addUserStmt.setLong(4, 0);
             addUserStmt.execute();
             ResultSet rs = addUserStmt.getGeneratedKeys();
@@ -255,6 +264,51 @@ public class SqliteUserDaoImpl implements AllUsersDao {
         try {
             insertGameStateStmt = conn.prepareStatement(INSERT_POINTS_BY_ID);
             insertGameStateStmt.setLong(1, newPoints);
+            insertGameStateStmt.setLong(2, id);
+            insertGameStateStmt.execute();
+            return getUserById(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public User updateTotalGamesById(Long id, Long newTotalGames) {
+        PreparedStatement insertGameStateStmt;
+        try {
+            insertGameStateStmt = conn.prepareStatement(INSERT_TOTAL_GAMES_BY_ID);
+            insertGameStateStmt.setLong(1, newTotalGames);
+            insertGameStateStmt.setLong(2, id);
+            insertGameStateStmt.execute();
+            return getUserById(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public User updateGamesWonById(Long id, Long newGamesWon) {
+        PreparedStatement insertGameStateStmt;
+        try {
+            insertGameStateStmt = conn.prepareStatement(INSERT_GAMES_WON_BY_ID);
+            insertGameStateStmt.setLong(1, newGamesWon);
+            insertGameStateStmt.setLong(2, id);
+            insertGameStateStmt.execute();
+            return getUserById(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public User updateGamesLostById(Long id, Long newGamesLost) {
+        PreparedStatement insertGameStateStmt;
+        try {
+            insertGameStateStmt = conn.prepareStatement(INSERT_GAMES_LOST_BY_ID);
+            insertGameStateStmt.setLong(1, newGamesLost);
             insertGameStateStmt.setLong(2, id);
             insertGameStateStmt.execute();
             return getUserById(id);

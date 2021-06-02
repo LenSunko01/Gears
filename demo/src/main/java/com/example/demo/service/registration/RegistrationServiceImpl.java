@@ -7,6 +7,8 @@ import com.example.demo.web.exceptions.InvalidPasswordException;
 import com.example.demo.web.exceptions.InvalidUsernameException;
 import org.springframework.stereotype.Service;
 
+import static com.example.demo.service.GameConstants.newUserPoints;
+
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
     private final AllUsersDao allUsers;
@@ -26,7 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         checkPasswordIsValid(password);
 
         var token = tokenService.generateNewToken();
-        var user = allUsers.addUser(username, password, token);
+        var user = allUsers.addUser(username, password, token, newUserPoints);
         return new User.UserInformation(token, allUsers.getIdByUsername(username));
     }
 

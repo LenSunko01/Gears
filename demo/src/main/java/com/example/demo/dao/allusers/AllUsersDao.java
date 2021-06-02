@@ -11,7 +11,7 @@ public interface AllUsersDao {
 
     boolean checkUsernameExists(String username);
 
-    User addUser(String username, String password, String token);
+    User addUser(String username, String password, String token, Long points);
 
     boolean checkPasswordIsCorrect(String username, String password);
 
@@ -40,4 +40,10 @@ public interface AllUsersDao {
     boolean updateToken(String token, String username);
 
     Long getIdByUsername(String username);
+
+    User updateTotalGamesById(Long id, Long newTotalGames);
+
+    User updateGamesWonById(Long id, Long newGamesWon);
+
+    User updateGamesLostById(Long id, Long newGamesLost);
 }

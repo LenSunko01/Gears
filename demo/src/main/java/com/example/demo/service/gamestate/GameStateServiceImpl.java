@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 
+import static com.example.demo.service.GameConstants.*;
+import static java.lang.Long.max;
+import static java.lang.Long.min;
+
 @Service
 public class GameStateServiceImpl implements GameStateService {
     private static final Log logger = LogFactory.getLog(UserController.class);
@@ -81,16 +85,38 @@ public class GameStateServiceImpl implements GameStateService {
         var buffer = gameState.getUsers();
         var firstUser = buffer.get(0);
         var secondUser = buffer.get(1);
-        if (gameState.getCurrentGameState() == GameState.CurrentGameState.FIRSTPLAYER) {
-            firstUser.setPoints(firstUser.getPoints() + gameState.getScoreOfFirstPlayer());
-            return;
-        }
-        if (gameState.getCurrentGameState() == GameState.CurrentGameState.SECONDPLAYER) {
-            secondUser.setPoints(secondUser.getPoints() + gameState.getScoreOfSecondPlayer());
-            return;
-        }
-        firstUser.setPoints((firstUser.getPoints() + gameState.getScoreOfFirstPlayer()) / 2);
-        secondUser.setPoints((secondUser.getPoints() + gameState.getScoreOfSecondPlayer()) / 2);
+        var currentGameState = gameState.getCurrentGameState();
         gameStateRepository.deleteGame(gameState.getId());
+        allUsers.updateTotalGamesById(firstUser.getId(), firstUser.getTotalNumberOfGames() + 1);
+        allUsers.updateTotalGamesById(secondUser.getId(), secondUser.getTotalNumberOfGames() + 1);
+        if (currentGameState == GameState.CurrentGameState.DRAW) {
+            return;
+        }
+        User winner;
+        User loser;
+        if (gameState.getCurrentGameState() == GameState.CurrentGameState.FIRSTPLAYER) {
+            winner = firstUser;
+            loser = secondUser;
+        } else {
+            winner = firstUser;
+            loser = secondUser;
+        }
+        allUsers.updateGamesWonById(winner.getId(), winner.getNumberOfGamesWon() + 1);
+        allUsers.updateGamesLostById(loser.getId(), loser.getNumberOfGamesLost() + 1);
+        var winnerPoints = winner.getPoints();
+        var loserPoints = loser.getPoints();
+        long pointsDifference;
+        if (winnerPoints >= loserPoints) {
+            if (loserPoints == 0) {
+                allUsers.updatePointsById(winner.getId(), winnerPoints + pointsIfStrongerBeatsWeaker);
+                return;
+            }
+            pointsDifference = min(loserPoints, pointsIfStrongerBeatsWeaker);
+        } else {
+            pointsDifference = max(min(loserPoints, pointsIfWeakerBeatsStronger),
+                    (loserPoints - winnerPoints) / pointsNormalizationFactor);
+        }
+        allUsers.updatePointsById(winner.getId(), winnerPoints + pointsDifference);
+        allUsers.updatePointsById(loser.getId(), loserPoints - pointsDifference);
     }
 }

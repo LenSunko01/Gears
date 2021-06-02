@@ -2,10 +2,6 @@ package com.example.demo.models.dto;
 
 import java.util.Objects;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
 public class User {
     public static class UserInformation {
         public String token;
@@ -20,14 +16,23 @@ public class User {
     private String username;
     private String password;
     private Long points;
+    private Long totalNumberOfGames;
+    private Long numberOfGamesWon;
+    private Long numberOfGamesLost;
 
     public User() {}
 
-    public User(Long id, String username, String password, Long points) {
+    public User(Long id, String username,
+                String password, Long points,
+                Long totalNumberOfGames, Long numberOfGamesWon,
+                Long numberOfGamesLost) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.points = points;
+        this.totalNumberOfGames = totalNumberOfGames;
+        this.numberOfGamesWon = numberOfGamesWon;
+        this.numberOfGamesLost = numberOfGamesLost;
     }
 
     public User(User user) {
@@ -35,18 +40,33 @@ public class User {
         this.username = user.username;
         this.password = user.password;
         this.points = user.points;
+        this.totalNumberOfGames = user.totalNumberOfGames;
+        this.numberOfGamesWon = user.numberOfGamesWon;
+        this.numberOfGamesLost = user.numberOfGamesLost;
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public String getUsername() {
-        return this.username;
+        return username;
     }
 
     public Long getPoints() {
-        return this.points;
+        return points;
+    }
+
+    public Long getTotalNumberOfGames() {
+        return totalNumberOfGames;
+    }
+
+    public Long getNumberOfGamesWon() {
+        return numberOfGamesWon;
+    }
+
+    public Long getNumberOfGamesLost() {
+        return numberOfGamesLost;
     }
 
     public void setId(Long id) {
@@ -61,31 +81,16 @@ public class User {
         this.points = points;
     }
 
-    @Override
-    public boolean equals(Object o) {
-
-        if (this == o)
-            return true;
-        if (!(o instanceof User))
-            return false;
-        User user = (User) o;
-        return Objects.equals(this.id, user.id) && Objects.equals(this.username, user.username)
-                && Objects.equals(this.password, user.password)
-                && Objects.equals(this.points, user.points);
+    public void setTotalNumberOfGames(Long totalNumberOfGames) {
+        this.totalNumberOfGames = totalNumberOfGames;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.id, this.username,
-                this.password, this.points);
+    public void setNumberOfGamesWon(Long numberOfGamesWon) {
+        this.numberOfGamesWon = numberOfGamesWon;
     }
 
-    @Override
-    public String toString() {
-        return "Employee{" + "id=" + this.id +
-                ", username='" + this.username + '\'' +
-                ", password='" + this.password + '\'' +
-                ", points='" + this.points + '\'' + '}';
+    public void setNumberOfGamesLost(Long numberOfGamesLost) {
+        this.numberOfGamesLost = numberOfGamesLost;
     }
 
     public String getPassword() {

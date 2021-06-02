@@ -56,6 +56,42 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
+    public User updateTotalGamesById(Long id, Long newTotalGames) {
+        var user = idToUser.get(id);
+        if (user == null) {
+            return null;
+        }
+        var newUser = new User(user);
+        newUser.setTotalNumberOfGames(newTotalGames);
+        updateUser(user, newUser);
+        return newUser;
+    }
+
+    @Override
+    public User updateGamesWonById(Long id, Long newGamesWon) {
+        var user = idToUser.get(id);
+        if (user == null) {
+            return null;
+        }
+        var newUser = new User(user);
+        newUser.setNumberOfGamesWon(newGamesWon);
+        updateUser(user, newUser);
+        return newUser;
+    }
+
+    @Override
+    public User updateGamesLostById(Long id, Long newGamesLost) {
+        var user = idToUser.get(id);
+        if (user == null) {
+            return null;
+        }
+        var newUser = new User(user);
+        newUser.setNumberOfGamesLost(newGamesLost);
+        updateUser(user, newUser);
+        return newUser;
+    }
+
+    @Override
     public User getUserById(Long id) {
         return idToUser.get(id);
     }
@@ -165,12 +201,13 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public User addUser(String username, String password, String token) {
+    public User addUser(String username, String password, String token, Long points) {
         if (checkUsernameExists(username)) {
             return null;
         }
 
-        var user = new User(generateUserId(), username, password, 0L);
+        var user = new User(generateUserId(), username, password, points,
+                0L, 0L, 0L);
         usernameToUser.put(username, user);
         userToUsername.put(user, username);
         usernameToPassword.put(username, password);
