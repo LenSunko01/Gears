@@ -7,6 +7,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 public class User {
+    public static class UserInformation {
+        public String token;
+        public Long id;
+        public UserInformation(String token, Long id) {
+            this.token = token;
+            this.id = id;
+        }
+    }
 
     private Long id;
     private String username;
@@ -15,11 +23,18 @@ public class User {
 
     public User() {}
 
-    public User(Long id, String login, String password, Long points) {
+    public User(Long id, String username, String password, Long points) {
         this.id = id;
-        this.username = login;
+        this.username = username;
         this.password = password;
         this.points = points;
+    }
+
+    public User(User user) {
+        this.id = user.id;
+        this.username = user.username;
+        this.password = user.password;
+        this.points = user.points;
     }
 
     public Long getId() {
