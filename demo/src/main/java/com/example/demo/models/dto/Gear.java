@@ -1,5 +1,4 @@
 package com.example.demo.models.dto;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,36 @@ public class Gear {
     List<Hole> holes = new ArrayList<>();
     private int numberOfHoles;
 
+    public Gear() {}
+
+    public Gear(Gear other) {
+        this.isLast = other.isLast;
+        this.isLast = other.isLast;
+        this.radius = other.radius;
+        this.degree = other.degree;
+        this.numberOfHoles = other.numberOfHoles;
+        this.downNeighbours = other.downNeighbours;
+        this.upperNeighbours = other.upperNeighbours;
+        this.x = other.x;
+        this.y = other.y;
+        List<Hole> newHoles = new ArrayList<>();
+        for (Hole hole: other.holes) {
+            newHoles.add(new Hole(hole));
+        }
+        this.holes = newHoles;
+
+
+
+    }
+
+    public void setIsLast(boolean bool) {
+        this.isLast = bool;
+    }
+
+    public void setIsFirst(boolean bool) {
+        this.isFirst = bool;
+    }
+
     public float getX() {
         return x;
     }
@@ -19,8 +48,11 @@ public class Gear {
         return y;
     }
 
-    public int getRadius() {
+    public float getRadius() {
         return radius;
+    }
+    public void setRadius(float radius) {
+        this.radius = radius;
     }
     public void setXY(int x, int y) {
         this.x = x + radius / 2;
@@ -29,7 +61,7 @@ public class Gear {
 
     private  float x;
     private  float y;
-    private int radius;
+    private float radius;
     public List<Integer> getDownNeighbours() {
         return downNeighbours;
     }
@@ -48,14 +80,11 @@ public class Gear {
 
     List<Integer> downNeighbours;
     List<Integer> upperNeighbours;
-    public Gear(int numberOfHoles, boolean isLast, boolean isFirst, float x, float y, int radius,
+    public Gear(int numberOfHoles, boolean isLast, boolean isFirst,
                 List<Integer> downNeighbours, List<Integer> upperNeighbours) {
         this.numberOfHoles = numberOfHoles;
         this.isLast = isLast;
         this.isFirst = isFirst;
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
         this.downNeighbours = downNeighbours;
         this.upperNeighbours = upperNeighbours;
         int currentDegreeToAdd = 0;
@@ -66,10 +95,6 @@ public class Gear {
             holes.add(i, bufferHole);
             currentDegreeToAdd += step;
         }
-    }
-
-    public Gear() {
-
     }
 
     public int getNumberOfHoles() {
@@ -92,24 +117,12 @@ public class Gear {
         return holes;
     }
 
-    @JsonProperty(value="isLast")
     public boolean isLast() {
         return isLast;
     }
 
-    @JsonProperty(value="isLast")
-    public void setIsLast(boolean val) {
-        isLast = val;
-    }
-
-    @JsonProperty(value="isFirst")
     public boolean isFirst() {
         return isFirst;
-    }
-
-    @JsonProperty(value="isFirst")
-    public void setIsFirst(boolean val) {
-        isFirst = val;
     }
 
     public static class Hole {
@@ -119,14 +132,19 @@ public class Gear {
         private int numberOfBall;
         private int numberOfHole;
 
+        public Hole() { }
+        public Hole(Hole other) {
+            this.capacity = other.capacity;
+            this.degree = other.degree;
+            this.isFree = other.isFree;
+            this.numberOfBall = other.numberOfBall;
+            this.numberOfHole = other.numberOfHole;
+        }
+
         public Hole(int numberOfHole) {
             capacity = 1;
             degree = 0;
             this.numberOfHole = numberOfHole;
-        }
-
-        public Hole() {
-
         }
 
         public int getCapacity() {
@@ -141,12 +159,10 @@ public class Gear {
             this.degree = (360 + degree) % 360;
         }
 
-        @JsonProperty(value="isFree")
         public boolean isFree() {
             return isFree;
         }
 
-        @JsonProperty(value="isFree")
         public void setFree(boolean free) {
             isFree = free;
         }
