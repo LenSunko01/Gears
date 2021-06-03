@@ -5,6 +5,7 @@ import com.example.demo.models.dto.User;
 import com.example.demo.utils.SqliteUtils;
 import com.example.demo.web.controllers.UserController;
 import com.example.demo.web.exceptions.InvalidUsernameException;
+import com.example.demo.web.exceptions.SQLUserBaseException;
 import com.example.demo.web.exceptions.UserNotFoundException;
 import net.bytebuddy.pool.TypePool;
 import org.apache.commons.logging.Log;
@@ -115,8 +116,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(rs.getLong(1));
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -146,8 +147,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return users;
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -160,8 +161,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getString("user_token");
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -174,8 +175,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByQuery(rs);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -184,8 +185,13 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             throw new InvalidUsernameException("User with provided username already exists");
         }
         PreparedStatement insertGameStateStmt;
+        return prepareUserStmt(id, newUsername, INSERT_USERNAME_BY_ID);
+    }
+
+    private User prepareUserStmt(Long id, String newUsername, String insertUsernameById) {
+        PreparedStatement insertGameStateStmt;
         try {
-            insertGameStateStmt = conn.prepareStatement(INSERT_USERNAME_BY_ID);
+            insertGameStateStmt = conn.prepareStatement(insertUsernameById);
             insertGameStateStmt.setString(1, newUsername);
             insertGameStateStmt.setLong(2, id);
 
@@ -193,9 +199,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-
-        return null;
     }
 
     @Override
@@ -214,24 +219,14 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(newUsername);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-
-        return null;
     }
 
     @Override
     public User updatePasswordById(Long id, String newPassword) {
         PreparedStatement insertGameStateStmt;
-        try {
-            insertGameStateStmt = conn.prepareStatement(INSERT_PASSWORD_BY_ID);
-            insertGameStateStmt.setString(1, newPassword);
-            insertGameStateStmt.setLong(2, id);
-            insertGameStateStmt.execute();
-            return getUserById(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return prepareUserStmt(id, newPassword, INSERT_PASSWORD_BY_ID);
     }
 
     @Override
@@ -245,8 +240,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -260,8 +255,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -275,8 +270,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -307,8 +302,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return false;
     }
 
     @Override
@@ -321,8 +316,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getLong("id");
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 
     @Override
@@ -335,7 +330,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByQuery(rs);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new SQLUserBaseException(e);
         }
-        return null;
     }
 }
