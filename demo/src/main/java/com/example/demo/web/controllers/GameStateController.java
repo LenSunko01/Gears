@@ -7,6 +7,7 @@ import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.web.exceptions.AuthenticationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ public class GameStateController {
     public GameStateController(GameStateService gameStateService) {
         this.gameStateService = gameStateService;
     }
+
     private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
 
     @GetMapping("/game/{id}/player/{currentPlayer}")
@@ -126,6 +128,47 @@ public class GameStateController {
         return output;
     }
 
+    @GetMapping("/board/{id}")
+    DeferredResult<ResponseEntity<GameState>> getBoardFromFirstPlayer(
+            @RequestHeader HttpHeaders headers,
+            @PathVariable Long id
+    ) {
+        var token = headers.getFirst("token");
+        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(getGameTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET board by ID request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET board request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        workerPool.submit(() -> {
+            logger.info("Processing in separate thread");
+            try {
+                var res = gameStateService.getStateById(id, token);
+                while (!res.isFirstPlayerHasInitializedBoard()) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                        logger.info("------------------------------Exception-------------------", ignored);
+                    }
+                    res = gameStateService.getStateById(id, token);
+                    if (output.isSetOrExpired()) {
+                        logger.info("----------Request expired");
+                        break;
+                    }
+                }
+                output.setResult(ResponseEntity.ok(res));
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET board request: " + e.getMessage());
+            }
+            logger.info("Thread freed");
+        });
+        return output;
+    }
+
     @PostMapping("/init/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<GameState>> initBoard(
             @RequestHeader HttpHeaders headers,
@@ -135,7 +178,7 @@ public class GameStateController {
     ) {
         logger.info("!!!!!!!!!!!!!Received POST init game state by ID request " + currentPlayer);
         var token = headers.getFirst("token");
-        logger.info("****************" + currentPlayer.toString() + " " +  token);
+        logger.info("****************" + currentPlayer.toString() + " " + token);
         DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(initGameTimeoutInMilliseconds);
         output.onCompletion(() -> logger.info("POST init game by ID request completed"));
         output.onTimeout(() -> {
@@ -147,7 +190,6 @@ public class GameStateController {
         workerPool.submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                logger.info(board.getGears().get(0).isFirst());
                 var res = gameStateService.updateBoardById(id, token, currentPlayer, board);
                 logger.info(res.getFirstPlayerBoard().equals(board));
                 output.setResult(ResponseEntity.ok(res));
