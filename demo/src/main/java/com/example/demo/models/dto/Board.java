@@ -1,4 +1,5 @@
 package com.example.demo.models.dto;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,18 @@ public class Board {
     private Pot pot = new Pot();
     final private int step = 10;
 
+    public Board() {};
+    public Board(Board other) {
+        this.gears = other.gears;
+        this.rightGutter = new Gutter(other.rightGutter);
+        this.leftGutter = new Gutter(other.leftGutter);
+        this.pot = new Pot(other.pot);
+        List<Gear> newGears = new ArrayList<>();
+        for (Gear gear: other.gears) {
+            newGears.add(new Gear(gear));
+        }
+        this.gears = newGears;
+    }
     public Gutter getLeftGutter() {
         return leftGutter;
     }
@@ -70,20 +83,20 @@ public class Board {
     private void putBallsInFirstGear(int activeGear, Gear changingGear) {
         if (changingGear.isFirst()) {
             for (Gear.Hole holeOfChangingGear : changingGear.getHoles()) {
-                if (holeOfChangingGear.isFree() && isEqualDegrees(holeOfChangingGear.getDegree(), this.getLeftGutter().getDegree()) ||
-                        isEqualDegrees(holeOfChangingGear.getDegree(), this.getRightGutter().getDegree())) {
+                if (holeOfChangingGear.isFree() && (isEqualDegrees(holeOfChangingGear.getDegree(), this.getLeftGutter().getDegree()) ||
+                        isEqualDegrees(holeOfChangingGear.getDegree(), this.getRightGutter().getDegree()))) {
 
-                    if (isEqualDegrees(holeOfChangingGear.getDegree(), this.getLeftGutter().getDegree())) {
+                    if (this.getLeftGutter().getHowManyBalls() > 0 && isEqualDegrees(holeOfChangingGear.getDegree(), this.getLeftGutter().getDegree())) {
                         this.getLeftGutter().setHowManyBalls(getLeftGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
+                        holeOfChangingGear.setFree(false);
                     }
 
-                    if (isEqualDegrees(holeOfChangingGear.getDegree(), this.getRightGutter().getDegree())) {
+                    if (this.getRightGutter().getHowManyBalls() > 0 && isEqualDegrees(holeOfChangingGear.getDegree(), this.getRightGutter().getDegree())) {
                         this.getRightGutter().setHowManyBalls(getRightGutter().getHowManyBalls() - holeOfChangingGear.getCapacity());
+                        holeOfChangingGear.setFree(false);
                     }
-                    holeOfChangingGear.setFree(false);
                 }
             }
-
         }
     }
 
@@ -94,15 +107,12 @@ public class Board {
                         !holeOfChangingGear.isFree()) {
                     this.getPot().setHowManyBalls(getPot().getHowManyBalls() + holeOfChangingGear.getCapacity());
                     holeOfChangingGear.setFree(true);
-
-                    changingGear.getHoles().set(holeOfChangingGear.getNumberOfHole(), holeOfChangingGear);
                 }
             }
             List<Gear> arrayOfGears = this.getGears();
             arrayOfGears.set(activeGear, changingGear);
         }
     }
-
 
     private boolean connectionHoleWithGearsCenter(Gear upperGear, Gear downGear, Gear.Hole upperHole) {
         double sumRadius = Math.sqrt(Math.pow((upperGear.getX() - downGear.getX()), 2) + Math.pow((upperGear.getY() - downGear.getY()), 2));
@@ -136,6 +146,9 @@ public class Board {
     }
 
     private boolean checkDegreeEquals(Gear.Hole upperGearHole, Gear.Hole downGearHole, double xUpperGear, double xDownGear) {
+        if (upperGearHole.getDegree() == 180) {
+            return downGearHole.getDegree() > 350 || downGearHole.getDegree() < 10;
+        }
         if (xUpperGear - xDownGear < 0) {
             return upperGearHole.getDegree() < 180 && downGearHole.getDegree() > 180 &&
                     isEqualDegrees(upperGearHole.getDegree(), downGearHole.getDegree() - 180);
@@ -154,12 +167,17 @@ public class Board {
     }
 
     public class Gutter {
-        public Gutter() {
+        public Gutter() { }
+
+        public Gutter(Gutter other) {
+            this.degree = other.degree;
+            this.howManyBalls = other.howManyBalls;
+            this.howManyBallsStart = other.howManyBallsStart;
         }
 
         private int degree = 60;
         private int howManyBalls = 1;
-        private final int howManyBallsStart = 1;
+        private int howManyBallsStart = 1;
 
         public Gutter(int degree) {
             this.degree = degree;
@@ -187,7 +205,11 @@ public class Board {
     }
 
     public class Pot {
-        public Pot() {
+        public Pot() { }
+
+        public Pot(Pot other) {
+            this.degree = other.degree;
+            this.howManyBalls = other.howManyBalls;
         }
 
         private int degree = 120;
