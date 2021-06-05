@@ -1,13 +1,11 @@
 package com.example.demo;
 
-import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
 import com.example.demo.web.controllers.UserController;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.stubbing.answers.AnswersWithDelay;
@@ -211,7 +209,7 @@ public class UserControllerTests {
     public void getUserByIdOkTest() throws Exception {
         var header = new HttpHeaders();
         header.add("token", "correctToken");
-        when(userService.getUserById(2L, "correctToken")).thenReturn(new User(2L, "Katya", "123",32L));
+        when(userService.getUserById(2L, "correctToken")).thenReturn(new User(2L, "Katya", "123",32L, 0L, 0L, 0L));
         var result = mockMvc.perform(get("/user/{id}", 2L)
                 .headers(header))
                 .andExpect(request().asyncStarted()).andReturn();
@@ -242,7 +240,7 @@ public class UserControllerTests {
         var header = new HttpHeaders();
         header.add("token", "correctToken");
         doAnswer(new AnswersWithDelay(getUserTimeoutInMilliseconds + 100L,
-                new Returns(new User(2L, "Katya", "123",32L))))
+                new Returns(new User(2L, "Katya", "123",32L, 0L, 0L, 0L))))
                 .when(userService).getUserById(2L, "correctToken");
         var result = mockMvc.perform(get("/user/{id}", 2L)
                 .headers(header))
@@ -263,9 +261,9 @@ public class UserControllerTests {
         header.add("token", "correctToken");
         when(gameStateService.setGame(any(User.class), any(User.class))).thenReturn(1L);
         when(userService.getUserByUsername("Katya", "correctToken"))
-                .thenReturn(new User(2L, "Katya", "123",32L));
+                .thenReturn(new User(2L, "Katya", "123",32L, 0L, 0L, 0L));
         when(userService.getUserByUsername("Maksim", "correctToken"))
-                .thenReturn(new User(2L, "Maksim", "123",32L));
+                .thenReturn(new User(2L, "Maksim", "123",32L, 0L, 0L, 0L));
         var result1 = mockMvc.perform(post("/find/opponent")
                 .param("username", "Katya")
                 .headers(header))
@@ -303,7 +301,7 @@ public class UserControllerTests {
         var list = new ArrayList<MvcResult>();
         for (var i = 0; i < 100; i++) {
             when(userService.getUserByUsername(anyString(), anyString()))
-                    .thenReturn(new User(2L, username, "123",32L));
+                    .thenReturn(new User(2L, username, "123",32L, 0L, 0L, 0L));
             var res = mockMvc.perform(post("/find/opponent")
                     .param("username", username)
                     .headers(header))
