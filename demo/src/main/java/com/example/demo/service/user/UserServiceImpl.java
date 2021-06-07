@@ -83,6 +83,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updatePicture(Long id, byte[] newPicture, String token) {
+        validateToken(id, token);
+        return allUsers.updatePicture(allUsers.getUserById(id).getUsername(), newPicture);
+    }
+
+    @Override
     public User getUserByUsername(String username, String token) {
         var user = allUsers.getUserByUsername(username);
         var id = user.getId();

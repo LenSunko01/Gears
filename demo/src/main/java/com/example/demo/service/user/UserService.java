@@ -19,6 +19,8 @@ public interface UserService {
 
     User updatePoints(Long id, Long newPoints, String token);
 
+    User updatePicture(Long id, byte[] newPicture, String token);
+
     User getUserByUsername(String username, String token);
 
     User updateUsername(String username, String newUsername, String token);

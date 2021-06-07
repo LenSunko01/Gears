@@ -295,6 +295,39 @@ public class UserController {
         return output;
     }
 
+    @PutMapping("/picture")
+    DeferredResult<User> updatePicture(
+            @RequestHeader HttpHeaders headers, @RequestParam byte[] newPicture, @RequestParam Long id
+    ) {
+        logger.info("Received PUT picture request");
+        var token = headers.getFirst("token");
+        DeferredResult<User> output = new DeferredResult<User>(60000L);
+        output.onCompletion(() -> {
+            logger.info("PUT request completed");
+        });
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing PUT picture request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            User user;
+            try {
+                user = userService.updatePicture(id, newPicture, token);
+                output.setResult(user);
+            } catch (Exception e) {
+                logger.info("Exception while executing PUT picture request: " + e.getMessage());
+                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(e.getMessage()));
+            }
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
     @PutMapping("/update-password")
     DeferredResult<User> updatePassword(
             @RequestParam String newPassword, @RequestParam Long id, @RequestParam String token
