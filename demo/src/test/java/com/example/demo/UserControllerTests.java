@@ -209,7 +209,7 @@ public class UserControllerTests {
     public void getUserByIdOkTest() throws Exception {
         var header = new HttpHeaders();
         header.add("token", "correctToken");
-        when(userService.getUserById(2L, "correctToken")).thenReturn(new User(2L, "Katya", "123",32L, 0L, 0L, 0L));
+        when(userService.getUserById(2L, "correctToken")).thenReturn(new User(2L, "Katya", "123",32L, 0L, 0L, 0L, null));
         var result = mockMvc.perform(get("/user/{id}", 2L)
                 .headers(header))
                 .andExpect(request().asyncStarted()).andReturn();
@@ -240,7 +240,7 @@ public class UserControllerTests {
         var header = new HttpHeaders();
         header.add("token", "correctToken");
         doAnswer(new AnswersWithDelay(getUserTimeoutInMilliseconds + 100L,
-                new Returns(new User(2L, "Katya", "123",32L, 0L, 0L, 0L))))
+                new Returns(new User(2L, "Katya", "123",32L, 0L, 0L, 0L, null))))
                 .when(userService).getUserById(2L, "correctToken");
         var result = mockMvc.perform(get("/user/{id}", 2L)
                 .headers(header))
@@ -261,9 +261,9 @@ public class UserControllerTests {
         header.add("token", "correctToken");
         when(gameStateService.setGame(any(User.class), any(User.class))).thenReturn(1L);
         when(userService.getUserByUsername("Katya", "correctToken"))
-                .thenReturn(new User(2L, "Katya", "123",32L, 0L, 0L, 0L));
+                .thenReturn(new User(2L, "Katya", "123",32L, 0L, 0L, 0L, null));
         when(userService.getUserByUsername("Maksim", "correctToken"))
-                .thenReturn(new User(2L, "Maksim", "123",32L, 0L, 0L, 0L));
+                .thenReturn(new User(2L, "Maksim", "123",32L, 0L, 0L, 0L, null));
         var result1 = mockMvc.perform(post("/find/opponent")
                 .param("username", "Katya")
                 .headers(header))
@@ -301,7 +301,7 @@ public class UserControllerTests {
         var list = new ArrayList<MvcResult>();
         for (var i = 0; i < 100; i++) {
             when(userService.getUserByUsername(anyString(), anyString()))
-                    .thenReturn(new User(2L, username, "123",32L, 0L, 0L, 0L));
+                    .thenReturn(new User(2L, username, "123",32L, 0L, 0L, 0L, null));
             var res = mockMvc.perform(post("/find/opponent")
                     .param("username", username)
                     .headers(header))

@@ -35,7 +35,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     private static final String GET_USER_BY_TOKEN = "select * from user_state where user_token = ?";
 
     private static final String INSERT_USER = "insert into user_state(user_login, user_password, " +
-            "user_token, points, total_games, games_won, games_lost) values (?, ?, ?, ?, ?, ?, ?)";
+            "user_token, points, total_games, games_won, games_lost) values (?, ?, ?, ?, ?, ?, ?,?)";
 
     private static final String GET_USER_BY_USER_ID = "select * from user_state where id = ?";
 
@@ -61,6 +61,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
 
     private static final String INSERT_GAMES_LOST_BY_ID = "update user_state set games_lost=? where id=?";
 
+    private static final String INSERT_PICTURE_BY_USERNAME = "update user_state set picture=? where user_login=?";
+
     Connection conn;
 
     public SqliteUserDaoImpl(SqliteUtils utils) {
@@ -75,7 +77,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
                 rs.getLong("points"),
                 rs.getLong("total_games"),
                 rs.getLong("games_won"),
-                rs.getLong("games_lost"));
+                rs.getLong("games_lost"),
+                rs.getBytes("picture"));
     }
 
     @Override
@@ -117,9 +120,10 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             addUserStmt.setString(2, password);
             addUserStmt.setString(3, token);
             addUserStmt.setLong(4, points);
-            addUserStmt.setLong(4, 0);
-            addUserStmt.setLong(4, 0);
-            addUserStmt.setLong(4, 0);
+            addUserStmt.setLong(5, 0);
+            addUserStmt.setLong(6, 0);
+            addUserStmt.setLong(7, 0);
+            addUserStmt.setBytes(8, null);
             addUserStmt.execute();
             ResultSet rs = addUserStmt.getGeneratedKeys();
             return getUserById(rs.getLong(1));
@@ -311,6 +315,21 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public User updatePicture(String username, byte[] picture) {
+        PreparedStatement insertGameStateStmt;
+        try {
+            insertGameStateStmt = conn.prepareStatement(INSERT_PICTURE_BY_USERNAME);
+            insertGameStateStmt.setBytes(1, picture);
+            insertGameStateStmt.setString(2, username);
+            insertGameStateStmt.execute();
+            return getUserByUsername(username);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLUserBaseException(e);
+        }
     }
 
     @Override

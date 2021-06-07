@@ -92,13 +92,25 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
+    public User updatePicture(String username, byte[] picture) {
+        var user = usernameToUser.get(username);
+        if (user == null) {
+            return null;
+        }
+        var newUser = new User(user);
+        newUser.setPicture(picture);
+        updateUser(user, newUser);
+        return newUser;
+    }
+
+    @Override
     public User getUserById(Long id) {
         return idToUser.get(id);
     }
 
     @Override
     public Map<String, Long> getAll() {
-        Map<String, Long> users= new HashMap<>();
+        Map<String, Long> users = new HashMap<>();
         for (var user : idToUser.values()) {
             users.put(user.getUsername(), user.getPoints());
         }
@@ -207,7 +219,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
         }
 
         var user = new User(generateUserId(), username, password, points,
-                0L, 0L, 0L);
+                0L, 0L, 0L, null);
         usernameToUser.put(username, user);
         userToUsername.put(user, username);
         usernameToPassword.put(username, password);
