@@ -297,7 +297,7 @@ public class UserController {
 
     @PutMapping("/picture")
     DeferredResult<User> updatePicture(
-            @RequestHeader HttpHeaders headers, @RequestParam byte[] newPicture, @RequestParam Long id
+            @RequestHeader HttpHeaders headers, @RequestBody byte[] newPicture, @PathVariable Long id
     ) {
         logger.info("Received PUT picture request");
         var token = headers.getFirst("token");
