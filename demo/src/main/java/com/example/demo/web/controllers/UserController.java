@@ -295,7 +295,7 @@ public class UserController {
         return output;
     }
 
-    @PutMapping("/picture")
+    @PutMapping("/picture/{id}")
     DeferredResult<User> updatePicture(
             @RequestHeader HttpHeaders headers, @RequestBody byte[] newPicture, @PathVariable Long id
     ) {
