@@ -11,5 +11,6 @@ public interface GameStateDao {
     GameState saveGameState(GameState game);
     GameState updateGameState(Long id, GameState newGameState);
     GameState updateBoardInGameState(Long id, GameState.CurrentPlayer player, Board board);
+    boolean checkGameExists(Long id);
     void deleteGame(Long id);
 }

@@ -13,6 +13,8 @@ public interface UserService {
 
     Map<String, Long> getAll();
 
+    void validateToken(Long id, String token);
+
     User updateUsername(Long id, String newUsername, String token);
 
     User updatePassword(Long id, String newPassword, String token);

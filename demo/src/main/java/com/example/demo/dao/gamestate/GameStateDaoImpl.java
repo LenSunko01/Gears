@@ -55,6 +55,11 @@ public class GameStateDaoImpl implements GameStateDao {
     }
 
     @Override
+    public boolean checkGameExists(Long id) {
+        return gameStateStorage.containsKey(id);
+    }
+
+    @Override
     public void deleteGame(Long id) {
         gameStateStorage.remove(id);
     }
