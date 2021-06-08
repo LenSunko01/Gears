@@ -2,6 +2,7 @@ package com.example.demo.web.controllers;
 
 import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
+import com.example.demo.models.dto.Message;
 import com.example.demo.models.dto.User;
 import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.web.exceptions.AuthenticationException;
@@ -14,18 +15,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.AbstractMap;
+import java.util.concurrent.*;
 
 import static com.example.demo.web.controllers.ControllersConstants.*;
 
 @RestController
 public class GameStateController {
-    private static final Log logger = LogFactory.getLog(UserController.class);
+    private static final Log logger = LogFactory.getLog(GameStateController.class);
     private final GameStateService gameStateService;
-
+    ConcurrentHashMap<AbstractMap.SimpleEntry<Long, GameState.CurrentPlayer>, ConcurrentLinkedQueue<Message>> messages = new ConcurrentHashMap<>();
     public GameStateController(GameStateService gameStateService) {
         this.gameStateService = gameStateService;
     }
@@ -176,7 +175,7 @@ public class GameStateController {
             @PathVariable GameState.CurrentPlayer currentPlayer,
             @RequestBody Board board
     ) {
-        logger.info("!!!!!!!!!!!!!Received POST init game state by ID request " + currentPlayer);
+        logger.info("Received POST init game state by ID request " + currentPlayer);
         var token = headers.getFirst("token");
         logger.info("****************" + currentPlayer.toString() + " " + token);
         DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(initGameTimeoutInMilliseconds);
@@ -225,12 +224,111 @@ public class GameStateController {
             logger.info("Processing in separate thread");
             try {
                 gameStateService.deleteGameState(id, token);
+                messages.remove(new AbstractMap.SimpleEntry<>(id, currentPlayer));
                 output.setResult(ResponseEntity.ok("Game deleted"));
                 logger.info("Completed DELETE game request");
             } catch (Exception e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
                 logger.info("Exception while executing DELETE game request: " + e.getMessage());
+            }
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    @PostMapping("/message/{id}/player/{currentPlayer}")
+    DeferredResult<ResponseEntity<String>> sendMessage(
+            @RequestHeader HttpHeaders headers,
+            @RequestBody Message message,
+            @PathVariable Long id,
+            @PathVariable GameState.CurrentPlayer currentPlayer
+    ) {
+        logger.info("Received POST message by ID request");
+        var token = headers.getFirst("token");
+        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(postMessageTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("POST message by ID request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing POST message request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            try {
+                if (!gameStateService.checkGameExists(id)) {
+                    throw new Exception("Game does not exist");
+                }
+                gameStateService.validateToken(id, token);
+                var playerEntry = new AbstractMap.SimpleEntry<>(id, currentPlayer);
+                messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
+                messages.get(playerEntry).add(message);
+                output.setResult(ResponseEntity.ok("Message sent"));
+                logger.info("Completed POST message request");
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST message request: " + e.getMessage());
+            }
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    @GetMapping("/message/{id}/player/{currentPlayer}")
+    DeferredResult<ResponseEntity<Message>> getMessage(
+            @RequestHeader HttpHeaders headers,
+            @PathVariable Long id,
+            @PathVariable GameState.CurrentPlayer currentPlayer
+    ) {
+        logger.info("Received GET message by ID request");
+        var token = headers.getFirst("token");
+        DeferredResult<ResponseEntity<Message>> output = new DeferredResult<>(getMessageTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET message by ID request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET message request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            try {
+                if (!gameStateService.checkGameExists(id)) {
+                    throw new Exception("Game does not exist");
+                }
+                gameStateService.validateToken(id, token);
+                AbstractMap.SimpleEntry<Long, GameState.CurrentPlayer> playerEntry;
+                if (currentPlayer == GameState.CurrentPlayer.FIRSTPLAYER) {
+                    playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.SECONDPLAYER);
+                } else {
+                    playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.FIRSTPLAYER);
+                }
+                messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
+                var res = messages.get(playerEntry).poll();
+                while (res == null) {
+                    logger.info("No messages yet, wait for some time " + currentPlayer);
+                    try {
+                        Thread.sleep(800);
+                    } catch (InterruptedException ignored) {
+                        logger.info("------------------------------Exception-------------------", ignored);
+                    }
+                    logger.info("-------------------Woke up from sleep " + currentPlayer);
+                    res = messages.get(playerEntry).poll();
+                    if (output.isSetOrExpired()) {
+                        logger.info("----------Request expired");
+                        break;
+                    }
+                }
+                logger.info("Got message");
+                output.setResult(ResponseEntity.ok(res));
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET message request: " + e.getMessage());
             }
             logger.info("Thread freed");
         });
