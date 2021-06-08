@@ -35,11 +35,13 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     private static final String GET_USER_BY_TOKEN = "select * from user_state where user_token = ?";
 
     private static final String INSERT_USER = "insert into user_state(user_login, user_password, " +
-            "user_token, points, total_games, games_won, games_lost) values (?, ?, ?, ?, ?, ?, ?,?)";
+            "user_token, points, total_games, games_won, games_lost, picture) values (?, ?, ?, ?, ?, ?, ?,?)";
 
     private static final String GET_USER_BY_USER_ID = "select * from user_state where id = ?";
 
     private static final String GET_ALL_USERS = "select * from user_state";
+
+    private static final String GET_PICTURE_BY_USERNAME = "select picture from user_state where user_login = ?";
 
     private static final String INSERT_TOKEN_BY_USERNAME = "update user_state set user_token=? where user_login=?";
 
@@ -326,6 +328,20 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             insertGameStateStmt.setString(2, username);
             insertGameStateStmt.execute();
             return getUserByUsername(username);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLUserBaseException(e);
+        }
+    }
+
+    @Override
+    public byte[] getPicture(String username) {
+        PreparedStatement getUserStmt;
+        try {
+            getUserStmt = conn.prepareStatement(GET_PICTURE_BY_USERNAME);
+            getUserStmt.setString(1, username);
+            ResultSet rs = getUserStmt.executeQuery();
+            return rs.getBytes("picture");
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLUserBaseException(e);
