@@ -5,6 +5,7 @@ import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
+import com.example.demo.utils.PictureWrapper;
 import com.example.demo.web.exceptions.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
+import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -94,9 +96,9 @@ public class UserController {
     }
 
     @GetMapping("/picture/{id}")
-    DeferredResult<ResponseEntity<byte[]>> getPicture(@PathVariable Long id) {
+    DeferredResult<ResponseEntity<PictureWrapper>> getPicture(@PathVariable Long id) {
         logger.info("Received GET picture user request");
-        DeferredResult<ResponseEntity<byte[]>> output = new DeferredResult<>(getPitureTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<PictureWrapper>> output = new DeferredResult<>(getPitureTimeoutInMilliseconds);
         output.onCompletion(() -> logger.info("GET picture user request completed"));
         output.onTimeout(() -> {
             logger.info("Timeout during executing GET picture user request");
@@ -108,7 +110,7 @@ public class UserController {
             logger.info("Processing GET picture request in separate thread");
             var picture = userService.getPictureById(id);
             logger.info("Got picture for the request");
-            output.setResult(ResponseEntity.ok(picture));
+            output.setResult(ResponseEntity.ok(new PictureWrapper(picture)));
             logger.info("Set picture");
             logger.info("Thread freed");
         });
@@ -324,7 +326,7 @@ public class UserController {
     ) {
         logger.info("Received PUT picture request");
         var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<User>(60000L);
+        DeferredResult<User> output = new DeferredResult<User>(getPitureTimeoutInMilliseconds);
         output.onCompletion(() -> {
             logger.info("PUT request completed");
         });
