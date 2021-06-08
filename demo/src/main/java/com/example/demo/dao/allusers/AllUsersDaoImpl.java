@@ -15,6 +15,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
     Map<Long, User> idToUser = new HashMap<>();
     Map<User, Long> userToId = new HashMap<>();
     Map<User, byte[]> userToPicture = new HashMap<>();
+    Map<byte[], User> pictureToUser = new HashMap<>();
     private Long count = 0L;
 
     private Long generateUserId() {
@@ -98,7 +99,10 @@ public class AllUsersDaoImpl implements AllUsersDao {
             return null;
         }
         var newUser = new User(user);
-        newUser.setPicture(picture);
+        var oldPicture = userToPicture.get(newUser);
+        userToPicture.replace(newUser, picture);
+        pictureToUser.remove(oldPicture);
+        pictureToUser.put(picture, newUser);
         updateUser(user, newUser);
         return newUser;
     }
@@ -151,8 +155,10 @@ public class AllUsersDaoImpl implements AllUsersDao {
         userToId.put(newUser, newUser.getId());
         idToUser.remove(user.getId());
         idToUser.put(newUser.getId(), newUser);
+        var picture = userToPicture.get(user);
         userToPicture.remove(user);
-        userToPicture.put(newUser, newUser.getPicture());
+        userToPicture.put(newUser, picture);
+        pictureToUser.replace(picture, newUser);
     }
 
     @Override
@@ -226,7 +232,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
         }
 
         var user = new User(generateUserId(), username, password, points,
-                0L, 0L, 0L, null);
+                0L, 0L, 0L);
         usernameToUser.put(username, user);
         userToUsername.put(user, username);
         usernameToPassword.put(username, password);

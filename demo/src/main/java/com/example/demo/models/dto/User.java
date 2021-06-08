@@ -18,7 +18,7 @@ public class User {
     private Long totalNumberOfGames;
     private Long numberOfGamesWon;
     private Long numberOfGamesLost;
-    private byte[] picture;
+
 
     public User() {
     }
@@ -26,7 +26,7 @@ public class User {
     public User(Long id, String username,
                 String password, Long points,
                 Long totalNumberOfGames, Long numberOfGamesWon,
-                Long numberOfGamesLost, byte[] picture) {
+                Long numberOfGamesLost) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -34,7 +34,6 @@ public class User {
         this.totalNumberOfGames = totalNumberOfGames;
         this.numberOfGamesWon = numberOfGamesWon;
         this.numberOfGamesLost = numberOfGamesLost;
-        this.picture = picture;
     }
 
     public User(User user) {
@@ -45,7 +44,6 @@ public class User {
         this.totalNumberOfGames = user.totalNumberOfGames;
         this.numberOfGamesWon = user.numberOfGamesWon;
         this.numberOfGamesLost = user.numberOfGamesLost;
-        this.picture = user.picture;
     }
 
     public Long getId() {
@@ -104,11 +102,4 @@ public class User {
         this.password = password;
     }
 
-    public byte[] getPicture() {
-        return picture;
-    }
-
-    public void setPicture(byte[] picture) {
-        this.picture = picture;
-    }
 }

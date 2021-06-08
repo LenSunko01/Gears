@@ -118,4 +118,9 @@ public class UserServiceImpl implements UserService {
         validateToken(id, token);
         return allUsers.updatePointsById(id, newPoints);
     }
+
+    @Override
+    public byte[] getPictureById(Long id) {
+        return allUsers.getPicture(allUsers.getUserById(id).getUsername());
+    }
 }

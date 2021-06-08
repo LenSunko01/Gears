@@ -28,4 +28,6 @@ public interface UserService {
     User updatePassword(String password, String newPassword, String token);
 
     User updatePoints(String username, Long newPoints, String token);
+
+    byte[] getPictureById(Long id);
 }

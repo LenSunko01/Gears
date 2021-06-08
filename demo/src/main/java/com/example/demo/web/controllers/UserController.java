@@ -93,6 +93,29 @@ public class UserController {
         return output;
     }
 
+    @GetMapping("/picture/{id}")
+    DeferredResult<ResponseEntity<byte[]>> getPicture(@PathVariable Long id) {
+        logger.info("Received GET picture user request");
+        DeferredResult<ResponseEntity<byte[]>> output = new DeferredResult<>(getPitureTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET picture user request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET picture user request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing GET picture request in separate thread");
+            var picture = userService.getPictureById(id);
+            logger.info("Got picture for the request");
+            output.setResult(ResponseEntity.ok(picture));
+            logger.info("Set picture");
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
     @PostMapping("/register")
     public DeferredResult<ResponseEntity<User.UserInformation>> registerUser(@RequestParam String username, @RequestParam String password) {
         logger.info("Received POST register user request");

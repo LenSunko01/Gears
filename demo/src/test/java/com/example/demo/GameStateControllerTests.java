@@ -49,8 +49,8 @@ public class GameStateControllerTests {
         headerKatya.add("token", "correctTokenKatya");
         var headerMaks = new HttpHeaders();
         headerMaks.add("token", "correctTokenMaks");
-        var userKatya = new User(0L, "Katya", "123",32L, 0L, 0L, 0L, null);
-        var userMaks = new User(1L, "Maks", "123",32L, 0L, 0L, 0L, null);
+        var userKatya = new User(0L, "Katya", "123",32L, 0L, 0L, 0L);
+        var userMaks = new User(1L, "Maks", "123",32L, 0L, 0L, 0L);
         var list = new ArrayList<User>();
         list.add(userKatya);
         list.add(userMaks);

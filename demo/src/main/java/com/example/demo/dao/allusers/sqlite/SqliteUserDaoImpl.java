@@ -79,8 +79,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
                 rs.getLong("points"),
                 rs.getLong("total_games"),
                 rs.getLong("games_won"),
-                rs.getLong("games_lost"),
-                rs.getBytes("picture"));
+                rs.getLong("games_lost"));
     }
 
     @Override
