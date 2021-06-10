@@ -16,9 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Repository
 @Primary
@@ -40,6 +38,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     private static final String GET_USER_BY_USER_ID = "select * from user_state where id = ?";
 
     private static final String GET_ALL_USERS = "select * from user_state";
+
+    private static final String GET_USERS_SORTED = "select * from user_state order by points desc";
 
     private static final String GET_PICTURE_BY_USERNAME = "select picture from user_state where user_login = ?";
 
@@ -157,6 +157,23 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             ResultSet rs = getAllUsersStmt.executeQuery();
             while (rs.next()) {
                 users.put(rs.getString("user_login"), rs.getLong("points"));
+            }
+            return users;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLUserBaseException(e);
+        }
+    }
+
+    @Override
+    public ArrayList<User> getSortedByRatingList() {
+        PreparedStatement getSortedByRatingStmt;
+        var users = new ArrayList<User>();
+        try {
+            getSortedByRatingStmt = conn.prepareStatement(GET_USERS_SORTED);
+            ResultSet rs = getSortedByRatingStmt.executeQuery();
+            while (rs.next()) {
+                users.add(getUserByQuery(rs));
             }
             return users;
         } catch (SQLException e) {

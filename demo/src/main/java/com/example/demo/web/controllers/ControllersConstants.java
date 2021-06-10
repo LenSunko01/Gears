@@ -13,5 +13,8 @@ public class ControllersConstants {
     public final static Long deleteGameTimeoutInMilliseconds = 200L;
     public final static Long getPitureTimeoutInMilliseconds = 600000L;
     public final static Long postMessageTimeoutInMilliseconds = 100L;
+    public final static Long getMessageTimeoutInMilliseconds = 100000L;
+    public final static Long getRatingTimeoutInMilliseconds = 1000L;
 
+    public final static int numberOfUsersShownInRating = 10;
 }

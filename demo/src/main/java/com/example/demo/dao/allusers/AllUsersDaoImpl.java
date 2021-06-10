@@ -127,6 +127,13 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
+    public ArrayList<User> getSortedByRatingList() {
+        var list = new ArrayList<>(userToId.keySet());
+        list.sort(Comparator.comparingLong((User::getPoints)));
+        return list;
+    }
+
+    @Override
     public String getTokenByUsername(String username) {
         var user = usernameToUser.get(username);
         if (user == null) {

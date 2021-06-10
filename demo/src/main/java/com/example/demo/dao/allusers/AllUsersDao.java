@@ -23,6 +23,8 @@ public interface AllUsersDao {
 
     Map<String, Long> getAll();
 
+    ArrayList<User> getSortedByRatingList();
+
     String getTokenByUsername(String username);
 
     User updateUsernameById(Long id, String newUsername);

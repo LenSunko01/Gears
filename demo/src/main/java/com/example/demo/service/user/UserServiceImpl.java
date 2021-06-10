@@ -14,6 +14,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -61,6 +62,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, Long> getAll() {
         return allUsers.getAll();
+    }
+
+    @Override
+    public List<User> getSortedByRatingList(int numberOfUsers) {
+        var list = allUsers.getSortedByRatingList();
+        var pointsInLastPosition = list.get(numberOfUsers).getPoints();
+        return list.stream().takeWhile(user -> user.getPoints() >= pointsInLastPosition).collect(Collectors.toList());
     }
 
     @Override

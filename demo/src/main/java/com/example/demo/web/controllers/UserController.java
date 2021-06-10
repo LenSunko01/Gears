@@ -6,7 +6,10 @@ import com.example.demo.service.login.LoginService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.service.user.UserService;
 import com.example.demo.utils.PictureWrapper;
-import com.example.demo.web.exceptions.*;
+import com.example.demo.web.exceptions.AuthenticationException;
+import com.example.demo.web.exceptions.InvalidPasswordException;
+import com.example.demo.web.exceptions.InvalidUsernameException;
+import com.example.demo.web.exceptions.UserNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpHeaders;
@@ -15,9 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
@@ -66,6 +69,29 @@ public class UserController {
             logger.info("Got map with all users for GET users request");
             output.setResult(ResponseEntity.ok(list));
             logger.info("Set map with all users for GET users request");
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    @GetMapping("/rating")
+    DeferredResult<ResponseEntity<List<User>>> getUsersByRating() {
+        logger.info("Received GET rating request");
+        DeferredResult<ResponseEntity<List<User>>> output = new DeferredResult<>(getRatingTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("GET rating request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing GET rating request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing GET rating in separate thread");
+            var list = userService.getSortedByRatingList(numberOfUsersShownInRating);
+            logger.info("Got list with all users for GET rating request");
+            output.setResult(ResponseEntity.ok(list));
+            logger.info("Set list with all users for GET rating request");
             logger.info("Thread freed");
         });
 
@@ -326,10 +352,8 @@ public class UserController {
     ) {
         logger.info("Received PUT picture request");
         var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<User>(getPitureTimeoutInMilliseconds);
-        output.onCompletion(() -> {
-            logger.info("PUT request completed");
-        });
+        DeferredResult<User> output = new DeferredResult<>(getPitureTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("PUT request completed"));
         output.onTimeout(() -> {
             logger.info("Timeout during executing PUT picture request");
             output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
