@@ -31,7 +31,8 @@ public class UserServiceImpl implements UserService {
         this.gameStateService = gameStateService;
     }
 
-    private void validateToken(Long id, String token) {
+    @Override
+    public void validateToken(Long id, String token) {
         var user = allUsers.getUserById(id);
         var username = user.getUsername();
         var correctToken = allUsers.getTokenByUsername(username);

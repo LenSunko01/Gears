@@ -31,7 +31,8 @@ public class GameStateServiceImpl implements GameStateService {
     }
 
     /* accepts game ID and throws exception if token matches none of the users in the game */
-    private void validateToken(Long id, String token) {
+    @Override
+    public void validateToken(Long id, String token) {
         var game = gameStateRepository.getStateById(id);
         var users = game.getUsers();
         var correctTokenFirstUser = allUsers.getTokenByUsername(users.get(0).getUsername());
@@ -73,6 +74,11 @@ public class GameStateServiceImpl implements GameStateService {
         }
         gameState.setCountPlayersLeftGame(1);
         gameStateRepository.updateGameState(id, gameState);
+    }
+
+    @Override
+    public boolean checkGameExists(Long id) {
+        return gameStateRepository.checkGameExists(id);
     }
 
     @Override
