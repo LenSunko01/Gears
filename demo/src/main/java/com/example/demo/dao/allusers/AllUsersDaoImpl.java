@@ -14,7 +14,8 @@ public class AllUsersDaoImpl implements AllUsersDao {
     Map<User, String> userToToken = new HashMap<>();
     Map<Long, User> idToUser = new HashMap<>();
     Map<User, Long> userToId = new HashMap<>();
-
+    Map<User, byte[]> userToPicture = new HashMap<>();
+    Map<byte[], User> pictureToUser = new HashMap<>();
     private Long count = 0L;
 
     private Long generateUserId() {
@@ -92,13 +93,33 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
+    public User updatePicture(String username, byte[] picture) {
+        var user = usernameToUser.get(username);
+        if (user == null) {
+            return null;
+        }
+        var newUser = new User(user);
+        var oldPicture = userToPicture.get(newUser);
+        userToPicture.replace(newUser, picture);
+        pictureToUser.remove(oldPicture);
+        pictureToUser.put(picture, newUser);
+        updateUser(user, newUser);
+        return newUser;
+    }
+
+    @Override
+    public byte[] getPicture(String username) {
+        return userToPicture.get(usernameToUser.get(username));
+    }
+
+    @Override
     public User getUserById(Long id) {
         return idToUser.get(id);
     }
 
     @Override
     public Map<String, Long> getAll() {
-        Map<String, Long> users= new HashMap<>();
+        Map<String, Long> users = new HashMap<>();
         for (var user : idToUser.values()) {
             users.put(user.getUsername(), user.getPoints());
         }
@@ -134,6 +155,10 @@ public class AllUsersDaoImpl implements AllUsersDao {
         userToId.put(newUser, newUser.getId());
         idToUser.remove(user.getId());
         idToUser.put(newUser.getId(), newUser);
+        var picture = userToPicture.get(user);
+        userToPicture.remove(user);
+        userToPicture.put(newUser, picture);
+        pictureToUser.replace(picture, newUser);
     }
 
     @Override

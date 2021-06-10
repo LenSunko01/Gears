@@ -84,6 +84,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updatePicture(Long id, byte[] newPicture, String token) {
+      //  validateToken(id, token);
+        return allUsers.updatePicture(allUsers.getUserById(id).getUsername(), newPicture);
+    }
+
+    @Override
     public User getUserByUsername(String username, String token) {
         var user = allUsers.getUserByUsername(username);
         var id = user.getId();
@@ -112,5 +118,10 @@ public class UserServiceImpl implements UserService {
         var id = allUsers.getUserByUsername(username).getId();
         validateToken(id, token);
         return allUsers.updatePointsById(id, newPoints);
+    }
+
+    @Override
+    public byte[] getPictureById(Long id) {
+        return allUsers.getPicture(allUsers.getUserById(id).getUsername());
     }
 }

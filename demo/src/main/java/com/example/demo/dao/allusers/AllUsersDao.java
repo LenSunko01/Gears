@@ -46,4 +46,8 @@ public interface AllUsersDao {
     User updateGamesWonById(Long id, Long newGamesWon);
 
     User updateGamesLostById(Long id, Long newGamesLost);
+
+    User updatePicture(String username, byte[] picture);
+
+    byte[] getPicture(String username);
 }

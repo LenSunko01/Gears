@@ -21,6 +21,8 @@ public interface UserService {
 
     User updatePoints(Long id, Long newPoints, String token);
 
+    User updatePicture(Long id, byte[] newPicture, String token);
+
     User getUserByUsername(String username, String token);
 
     User updateUsername(String username, String newUsername, String token);
@@ -28,4 +30,6 @@ public interface UserService {
     User updatePassword(String password, String newPassword, String token);
 
     User updatePoints(String username, Long newPoints, String token);
+
+    byte[] getPictureById(Long id);
 }

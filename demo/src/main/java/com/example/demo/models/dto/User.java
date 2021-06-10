@@ -1,11 +1,10 @@
 package com.example.demo.models.dto;
 
-import java.util.Objects;
-
 public class User {
     public static class UserInformation {
         public String token;
         public Long id;
+
         public UserInformation(String token, Long id) {
             this.token = token;
             this.id = id;
@@ -20,7 +19,9 @@ public class User {
     private Long numberOfGamesWon;
     private Long numberOfGamesLost;
 
-    public User() {}
+
+    public User() {
+    }
 
     public User(Long id, String username,
                 String password, Long points,
@@ -100,4 +101,5 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
 }
