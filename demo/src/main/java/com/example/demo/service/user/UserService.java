@@ -5,6 +5,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public interface UserService {
@@ -12,6 +13,8 @@ public interface UserService {
     Map.Entry<String, Long> getRandomUser();
 
     Map<String, Long> getAll();
+
+    List<User> getSortedByRatingList(int numberOfUsers);
 
     void validateToken(Long id, String token);
 
