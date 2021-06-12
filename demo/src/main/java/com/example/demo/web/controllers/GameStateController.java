@@ -3,12 +3,10 @@ package com.example.demo.web.controllers;
 import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.Message;
-import com.example.demo.models.dto.User;
 import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.web.exceptions.AuthenticationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +27,6 @@ public class GameStateController {
         this.gameStateService = gameStateService;
     }
 
-    private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
-
     @GetMapping("/game/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<GameState>> gameState(
             @RequestHeader HttpHeaders headers,
@@ -47,15 +43,13 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        logger.info(Thread.currentThread().getId());
-
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
                 logger.info(Thread.currentThread().getId());
                 logger.info("Trying to get game state, before while");
                 logger.info(currentPlayer);
-                var res = gameStateService.getStateById(id, token);
+                var res = gameStateService.getStateById(id, token, currentPlayer);
                 while (!(res.getCurrentPlayer().equals(currentPlayer)
                         && res.isFirstPlayerHasInitializedBoard()
                         && res.isSecondPlayerHasInitializedBoard())
@@ -73,7 +67,7 @@ public class GameStateController {
                         logger.info("------------------------------Exception-------------------", ignored);
                     }
                     logger.info("-------------------Woke up from sleep " + currentPlayer);
-                    res = gameStateService.getStateById(id, token);
+                    res = gameStateService.getStateById(id, token, currentPlayer);
                     logger.info(output.isSetOrExpired());
                     if (output.isSetOrExpired()) {
                         logger.info("----------Request expired");
@@ -82,8 +76,12 @@ public class GameStateController {
                 }
                 logger.info("Set game");
                 output.setResult(ResponseEntity.ok(res));
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing GET game request: " + e.getMessage());
             }
@@ -110,16 +108,20 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                gameStateService.updateStateById(id, token, newGameState);
+                gameStateService.updateStateById(id, token, newGameState, currentPlayer);
                 output.setResult(ResponseEntity.ok("Game updated"));
                 logger.info("Game updated");
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            } catch (AuthenticationException e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
-                logger.info("Exception while executing GET user request: " + e.getMessage());
+                logger.info("Exception while executing POST game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST game request: " + e.getMessage());
             }
             logger.info("Thread freed");
         });
@@ -141,25 +143,29 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                var res = gameStateService.getStateById(id, token);
+                var res = gameStateService.getStateById(id, token, GameState.CurrentPlayer.SECONDPLAYER);
                 while (!res.isFirstPlayerHasInitializedBoard()) {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ignored) {
                         logger.info("------------------------------Exception-------------------", ignored);
                     }
-                    res = gameStateService.getStateById(id, token);
+                    res = gameStateService.getStateById(id, token, GameState.CurrentPlayer.SECONDPLAYER);
                     if (output.isSetOrExpired()) {
                         logger.info("----------Request expired");
                         break;
                     }
                 }
                 output.setResult(ResponseEntity.ok(res));
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET board request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing GET board request: " + e.getMessage());
             }
@@ -186,15 +192,19 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
                 var res = gameStateService.updateBoardById(id, token, currentPlayer, board);
                 logger.info(res.getFirstPlayerBoard().equals(board));
                 output.setResult(ResponseEntity.ok(res));
                 logger.info("Completed POST init game request");
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST init game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing POST init game request: " + e.getMessage());
             }
@@ -220,15 +230,19 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                gameStateService.deleteGameState(id, token);
+                gameStateService.deleteGameState(id, token, currentPlayer);
                 messages.remove(new AbstractMap.SimpleEntry<>(id, currentPlayer));
                 output.setResult(ResponseEntity.ok("Game deleted"));
                 logger.info("Completed DELETE game request");
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing DELETE game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing DELETE game request: " + e.getMessage());
             }
@@ -261,14 +275,18 @@ public class GameStateController {
                 if (!gameStateService.checkGameExists(id)) {
                     throw new Exception("Game does not exist");
                 }
-                gameStateService.validateToken(id, token);
+                gameStateService.validateToken(id, token, currentPlayer);
                 var playerEntry = new AbstractMap.SimpleEntry<>(id, currentPlayer);
                 messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
                 messages.get(playerEntry).add(message);
                 output.setResult(ResponseEntity.ok("Message sent"));
                 logger.info("Completed POST message request");
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST message request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing POST message request: " + e.getMessage());
             }
@@ -300,7 +318,7 @@ public class GameStateController {
                 if (!gameStateService.checkGameExists(id)) {
                     throw new Exception("Game does not exist");
                 }
-                gameStateService.validateToken(id, token);
+                gameStateService.validateToken(id, token, currentPlayer);
                 AbstractMap.SimpleEntry<Long, GameState.CurrentPlayer> playerEntry;
                 if (currentPlayer == GameState.CurrentPlayer.FIRSTPLAYER) {
                     playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.SECONDPLAYER);
@@ -325,8 +343,12 @@ public class GameStateController {
                 }
                 logger.info("Got message");
                 output.setResult(ResponseEntity.ok(res));
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET message request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing GET message request: " + e.getMessage());
             }

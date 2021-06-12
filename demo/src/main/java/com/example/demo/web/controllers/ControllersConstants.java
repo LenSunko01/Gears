@@ -11,10 +11,14 @@ public class ControllersConstants {
     public final static Long postGameTimeoutInMilliseconds = 10000L;
     public final static Long initGameTimeoutInMilliseconds = 10000L;
     public final static Long deleteGameTimeoutInMilliseconds = 200L;
-    public final static Long getPitureTimeoutInMilliseconds = 600000L;
+    public final static Long getPictureTimeoutInMilliseconds = 600000L;
     public final static Long postMessageTimeoutInMilliseconds = 100L;
     public final static Long getMessageTimeoutInMilliseconds = 100000L;
     public final static Long getRatingTimeoutInMilliseconds = 1000L;
+    public final static Long putUsernameTimeoutInMilliseconds = 200L;
+    public final static Long putPictureTimeoutInMilliseconds = 30000L;
+    public final static Long putPasswordTimeoutInMilliseconds = 200L;
+    public final static Long putPointsTimeoutInMilliseconds = 200L;
 
     public final static int numberOfUsersShownInRating = 10;
 }

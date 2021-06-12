@@ -27,6 +27,8 @@ public interface AllUsersDao {
 
     String getTokenByUsername(String username);
 
+    String getTokenById(Long id);
+
     User updateUsernameById(Long id, String newUsername);
 
     User updateUsernameByUsername(String prevUsername, String newUsername);
@@ -49,7 +51,11 @@ public interface AllUsersDao {
 
     User updateGamesLostById(Long id, Long newGamesLost);
 
-    User updatePicture(String username, byte[] picture);
+    User updatePictureByUsername(String username, byte[] picture);
 
-    byte[] getPicture(String username);
+    User updatePictureById(Long id, byte[] picture);
+
+    byte[] getPictureByUsername(String username);
+
+    byte[] getPictureById(Long id);
 }

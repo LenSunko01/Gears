@@ -2,18 +2,17 @@ package com.example.demo.service.user;
 
 import com.example.demo.dao.allusers.AllUsersDao;
 import com.example.demo.models.dto.User;
-import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.service.registration.RegistrationService;
 import com.example.demo.web.controllers.UserController;
 import com.example.demo.web.exceptions.AuthenticationException;
-import com.example.demo.web.exceptions.OpponentNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,30 +20,25 @@ public class UserServiceImpl implements UserService {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final AllUsersDao allUsers;
     private final RegistrationService registrationService;
-    private final GameStateService gameStateService;
 
     public UserServiceImpl(
             AllUsersDao allUsers,
-            RegistrationService registrationService,
-            GameStateService gameStateService) {
+            RegistrationService registrationService) {
         this.allUsers = allUsers;
         this.registrationService = registrationService;
-        this.gameStateService = gameStateService;
     }
 
     @Override
-    public void validateToken(Long id, String token) {
-        var user = allUsers.getUserById(id);
-        var username = user.getUsername();
-        var correctToken = allUsers.getTokenByUsername(username);
-        if (!correctToken.equals(token)) {
-            throw new AuthenticationException();
-        }
+    public boolean validateToken(Long id, String token) {
+        var correctToken = allUsers.getTokenById(id);
+        return correctToken.equals(token);
     }
 
     @Override
     public User getUserById(Long id, String token) {
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         return allUsers.getUserById(id);
     }
 
@@ -73,42 +67,54 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUsername(Long id, String newUsername, String token) {
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         registrationService.checkLoginIsValid(newUsername);
         return allUsers.updateUsernameById(id, newUsername);
     }
 
     @Override
     public User updatePassword(Long id, String newPassword, String token) {
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         registrationService.checkPasswordIsValid(newPassword);
         return allUsers.updatePasswordById(id, newPassword);
     }
 
     @Override
     public User updatePoints(Long id, Long newPoints, String token) {
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         return allUsers.updatePointsById(id, newPoints);
     }
 
     @Override
     public User updatePicture(Long id, byte[] newPicture, String token) {
-      //  validateToken(id, token);
-        return allUsers.updatePicture(allUsers.getUserById(id).getUsername(), newPicture);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
+        return allUsers.updatePictureById(id, newPicture);
     }
 
     @Override
     public User getUserByUsername(String username, String token) {
         var user = allUsers.getUserByUsername(username);
         var id = user.getId();
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         return user;
     }
 
     @Override
     public User updateUsername(String username, String newUsername, String token) {
         var id = allUsers.getUserByUsername(username).getId();
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         registrationService.checkLoginIsValid(newUsername);
         return allUsers.updateUsernameById(id, newUsername);
     }
@@ -116,7 +122,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updatePassword(String username, String newPassword, String token) {
         var id = allUsers.getUserByUsername(username).getId();
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
         registrationService.checkPasswordIsValid(newPassword);
         return allUsers.updatePasswordById(id, newPassword);
     }
@@ -124,12 +132,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updatePoints(String username, Long newPoints, String token) {
         var id = allUsers.getUserByUsername(username).getId();
-        validateToken(id, token);
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
+        if (newPoints < 0) {
+            throw new IllegalArgumentException("Points can not be negative");
+        }
         return allUsers.updatePointsById(id, newPoints);
     }
 
     @Override
-    public byte[] getPictureById(Long id) {
-        return allUsers.getPicture(allUsers.getUserById(id).getUsername());
+    public byte[] getPictureById(Long id, String token) {
+        if (!validateToken(id, token)) {
+            throw new AuthenticationException();
+        }
+        return allUsers.getPictureById(id);
     }
 }

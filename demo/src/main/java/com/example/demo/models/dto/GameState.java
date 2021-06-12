@@ -14,9 +14,10 @@ public class GameState {
     private List<User> users;
     private Turn turn;
     private CurrentGameState currentGameState;
-    private int countPlayersLeftGame;
     private boolean firstPlayerHasInitializedBoard;
     private boolean secondPlayerHasInitializedBoard;
+    private boolean firstPlayerHasEndedGame;
+    private boolean secondPlayerHasEndedGame;
 
     public GameState(List<User> users) {
         scoreOfFirstPlayer = 0L;
@@ -26,9 +27,10 @@ public class GameState {
         secondPlayerBoard = new Board();
         turn = new Turn();
         currentGameState = CurrentGameState.CONTINUE;
-        countPlayersLeftGame = 0;
         firstPlayerHasInitializedBoard = false;
         secondPlayerHasInitializedBoard = false;
+        firstPlayerHasEndedGame = false;
+        secondPlayerHasEndedGame = false;
     }
 
     public GameState() {
@@ -74,14 +76,6 @@ public class GameState {
         this.turn = turn;
     }
 
-    public void setCountPlayersLeftGame(int countPlayersLeftGame) {
-        this.countPlayersLeftGame = countPlayersLeftGame;
-    }
-
-    public int getCountPlayersLeftGame() {
-        return countPlayersLeftGame;
-    }
-
     public boolean isFirstPlayerHasInitializedBoard() {
         return firstPlayerHasInitializedBoard;
     }
@@ -96,6 +90,22 @@ public class GameState {
 
     public void setSecondPlayerHasInitializedBoard(boolean secondPlayerHasInitializedBoard) {
         this.secondPlayerHasInitializedBoard = secondPlayerHasInitializedBoard;
+    }
+
+    public boolean isFirstPlayerHasEndedGame() {
+        return firstPlayerHasEndedGame;
+    }
+
+    public void setFirstPlayerHasEndedGame(boolean firstPlayerHasEndedGame) {
+        this.firstPlayerHasEndedGame = firstPlayerHasEndedGame;
+    }
+
+    public boolean isSecondPlayerHasEndedGame() {
+        return secondPlayerHasEndedGame;
+    }
+
+    public void setSecondPlayerHasEndedGame(boolean secondPlayerHasEndedGame) {
+        this.secondPlayerHasEndedGame = secondPlayerHasEndedGame;
     }
 
 
@@ -132,7 +142,7 @@ public class GameState {
         private int numberOfActiveGear = -1;
         private CurrentPlayer currentPlayer;
 
-        public void setCurrentPlayer(CurrentPlayer player) { this.currentPlayer = player; };
+        public void setCurrentPlayer(CurrentPlayer player) { this.currentPlayer = player; }
 
         private ArrayList<Integer> degree;
     }
