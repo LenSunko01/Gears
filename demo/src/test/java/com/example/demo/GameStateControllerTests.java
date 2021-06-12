@@ -59,7 +59,7 @@ public class GameStateControllerTests {
         gameState.setSecondPlayerHasInitializedBoard(true);
         gameState.setCurrentPlayer(GameState.CurrentPlayer.FIRSTPLAYER);
 
-        when(gameStateService.getStateById(anyLong(), anyString())).thenAnswer(new Answer() {
+        when(gameStateService.getStateById(anyLong(), anyString(), any(GameState.CurrentPlayer.class))).thenAnswer(new Answer() {
             public Object answer(InvocationOnMock invocation) {
                 return gameState;
             }

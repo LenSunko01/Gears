@@ -104,11 +104,13 @@ public class GameStateServiceImpl implements GameStateService {
     }
 
     private void endGame(GameState gameState) {
+        logger.info("End game start");
         var buffer = gameState.getUsers();
         var firstUser = buffer.get(0);
         var secondUser = buffer.get(1);
         var currentGameState = gameState.getCurrentGameState();
         gameStateRepository.deleteGame(gameState.getId());
+        logger.info("Game deleted");
         allUsers.updateTotalGamesById(firstUser.getId(), firstUser.getTotalNumberOfGames() + 1);
         allUsers.updateTotalGamesById(secondUser.getId(), secondUser.getTotalNumberOfGames() + 1);
         if (currentGameState == GameState.CurrentGameState.DRAW) {
@@ -140,5 +142,6 @@ public class GameStateServiceImpl implements GameStateService {
         }
         allUsers.updatePointsById(winner.getId(), winnerPoints + pointsDifference);
         allUsers.updatePointsById(loser.getId(), loserPoints - pointsDifference);
+        logger.info("End game end");
     }
 }

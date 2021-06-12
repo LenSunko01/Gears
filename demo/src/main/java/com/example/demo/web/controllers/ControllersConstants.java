@@ -10,7 +10,7 @@ public class ControllersConstants {
     public final static Long getGameTimeoutInMilliseconds = 100000L;
     public final static Long postGameTimeoutInMilliseconds = 10000L;
     public final static Long initGameTimeoutInMilliseconds = 10000L;
-    public final static Long deleteGameTimeoutInMilliseconds = 200L;
+    public final static Long deleteGameTimeoutInMilliseconds = 1000L;
     public final static Long getPictureTimeoutInMilliseconds = 600000L;
     public final static Long postMessageTimeoutInMilliseconds = 100L;
     public final static Long getMessageTimeoutInMilliseconds = 100000L;
