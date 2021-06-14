@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-/*
-Remember about concurrency (!)
- */
-
 
 @Repository
 public class GameStateDaoImpl implements GameStateDao {
@@ -37,7 +33,6 @@ public class GameStateDaoImpl implements GameStateDao {
         return newGameState;
     }
 
-    /* concurrency! */
     @Override
     public GameState updateBoardInGameState(Long id, GameState.CurrentPlayer player, Board board) {
         var gameState = gameStateStorage.get(id);

@@ -22,10 +22,14 @@ public class LoadDatabase {
     ) {
 
         return args -> {
-            var secondUser = new User(13L, "M", "zhopa", 0L, 0L, 0L, 0L);
-            var firstUser = new User(15L, "NG", "zhopa", 0L, 0L, 0L, 0L);
+            /*
+            load context, if necessary, for example:
+
+            var secondUser = new User(1L, "username1", "password1", 0L, 0L, 0L, 0L);
+            var firstUser = new User(2L, "username2", "password2", 0L, 0L, 0L, 0L);
             var gameId = gameStateService.setGame(firstUser, secondUser);
             log.info("Game id " + gameId);
+             */
         };
     }
 }
