@@ -1,10 +1,10 @@
 package ru.hse.gears.web.exceptions;
 
-public class SQLUserBaseException extends RuntimeException {
-    public SQLUserBaseException() {
+public class UserBaseException extends RuntimeException {
+    public UserBaseException() {
         super("Can not correctly work with data base");
     }
-    public SQLUserBaseException(Exception e) {
+    public UserBaseException(Exception e) {
         super("Can not correctly work with data base", e);
     }
 }

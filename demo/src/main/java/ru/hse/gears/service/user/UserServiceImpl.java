@@ -60,6 +60,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getSortedByRatingList(int numberOfUsers) {
+        if (numberOfUsers <= 0) {
+            throw new IllegalArgumentException("Required number of users must be at least 1");
+        }
         var list = allUsers.getSortedByRatingList();
         var pointsInLastPosition = list.get(numberOfUsers).getPoints();
         return list.stream().takeWhile(user -> user.getPoints() >= pointsInLastPosition).collect(Collectors.toList());
@@ -87,6 +90,9 @@ public class UserServiceImpl implements UserService {
     public User updatePoints(Long id, Long newPoints, String token) {
         if (!validateToken(id, token)) {
             throw new AuthenticationException();
+        }
+        if (newPoints < 0) {
+            throw new IllegalArgumentException("Points can not be negative");
         }
         return allUsers.updatePointsById(id, newPoints);
     }

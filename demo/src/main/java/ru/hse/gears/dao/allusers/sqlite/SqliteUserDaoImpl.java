@@ -5,7 +5,7 @@ import ru.hse.gears.models.dto.User;
 import ru.hse.gears.utils.SqliteUtils;
 import ru.hse.gears.web.controllers.UserController;
 import ru.hse.gears.web.exceptions.InvalidUsernameException;
-import ru.hse.gears.web.exceptions.SQLUserBaseException;
+import ru.hse.gears.web.exceptions.UserBaseException;
 import ru.hse.gears.web.exceptions.UserNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -136,7 +136,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(rs.getLong(1));
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -167,7 +167,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return users;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -184,7 +184,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return users;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -198,7 +198,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getString("user_token");
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -212,7 +212,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getString("user_token");
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -226,7 +226,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByQuery(rs);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -250,7 +250,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -270,7 +270,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(newUsername);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -291,7 +291,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -306,7 +306,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -366,7 +366,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -381,7 +381,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserById(id);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -395,7 +395,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getBytes("picture");
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -409,7 +409,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getBytes("picture");
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -424,7 +424,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByUsername(username);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -456,7 +456,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -470,7 +470,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return rs.getLong("id");
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 
@@ -484,7 +484,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
             return getUserByQuery(rs);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new SQLUserBaseException(e);
+            throw new UserBaseException(e);
         }
     }
 }

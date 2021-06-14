@@ -32,6 +32,9 @@ public class GameStateServiceImpl implements GameStateService {
     @Override
     public boolean validateToken(Long id, String token, GameState.CurrentPlayer player) {
         var game = gameStateRepository.getStateById(id);
+        if (game == null) {
+            throw new IllegalArgumentException("Game not found");
+        }
         var users = game.getUsers();
         String correctToken;
         if (player.equals(GameState.CurrentPlayer.FIRSTPLAYER)) {
@@ -60,7 +63,6 @@ public class GameStateServiceImpl implements GameStateService {
         if (!validateToken(id, token, player)) {
             throw new AuthenticationException();
         }
-        logger.info("Validated token, trying to update game state");
         gameStateRepository.updateGameState(id, newGameState);
         return newGameState;
     }
