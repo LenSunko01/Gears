@@ -36,81 +36,6 @@ public class GameStateController {
         this.gameStateService = gameStateService;
     }
 
-    /*
-    {
-    "id": 2472244993064557546,
-    "scoreOfFirstPlayer": 0,
-    "scoreOfSecondPlayer": 0,
-    "firstPlayerBoard": {
-        "gears": null,
-        "rightGutter": {
-            "degree": 60,
-            "howManyBalls": 1,
-            "howManyBallsStart": 1
-        },
-        "leftGutter": {
-            "degree": 300,
-            "howManyBalls": 1,
-            "howManyBallsStart": 1
-        },
-        "pot": {
-            "degree": 120,
-            "howManyBalls": 0
-        },
-        "step": 10,
-        "allBallsInPot": false
-    },
-    "secondPlayerBoard": {
-        "gears": null,
-        "rightGutter": {
-            "degree": 60,
-            "howManyBalls": 1,
-            "howManyBallsStart": 1
-        },
-        "leftGutter": {
-            "degree": 300,
-            "howManyBalls": 1,
-            "howManyBallsStart": 1
-        },
-        "pot": {
-            "degree": 120,
-            "howManyBalls": 0
-        },
-        "step": 10,
-        "allBallsInPot": false
-    },
-    "users": [
-        {
-            "id": 11,
-            "username": "Ilya",
-            "password": "zhopa",
-            "points": 700,
-            "totalNumberOfGames": 2,
-            "numberOfGamesWon": 1,
-            "numberOfGamesLost": 1
-        },
-        {
-            "id": 15,
-            "username": "NG",
-            "password": "zhopa",
-            "points": 200,
-            "totalNumberOfGames": 2,
-            "numberOfGamesWon": 1,
-            "numberOfGamesLost": 1
-        }
-    ],
-    "turn": {
-        "numberOfActiveGear": -1,
-        "degree": null
-    },
-    "currentGameState": "CONTINUE",
-    "firstPlayerHasInitializedBoard": false,
-    "secondPlayerHasInitializedBoard": false,
-    "firstPlayerHasEndedGame": false,
-    "secondPlayerHasEndedGame": false,
-    "currentPlayer": "FIRSTPLAYER"
-}
-     */
     @GetMapping("/game/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<GameState>> gameState(
             @RequestHeader HttpHeaders headers,
@@ -187,7 +112,7 @@ public class GameStateController {
                 lock.lock();
                 gameStateService.updateStateById(id, token, newGameState, currentPlayer);
                 output.setResult(ResponseEntity.ok("Game updated"));
-                conditionGameChangedMap.get(id).signal();
+                conditionGameChangedMap.get(id).signalAll();
                 logger.info("Game updated");
             } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -293,7 +218,8 @@ public class GameStateController {
                 var res = gameStateService.updateBoardById(id, token, currentPlayer, board);
                 logger.info(res.getFirstPlayerBoard().equals(board));
                 output.setResult(ResponseEntity.ok(res));
-                conditionInitMap.get(id).signal();
+                conditionInitMap.get(id).signalAll();
+                conditionGameChangedMap.get(id).signalAll();
                 logger.info("Completed POST init game request");
             } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)

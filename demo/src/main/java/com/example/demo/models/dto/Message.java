@@ -1,7 +1,7 @@
 package com.example.demo.models.dto;
 
 public class Message {
-    public enum MessageType { FIRSTTYPE, SECONDTYPE, THIRDTYPE }
+    public enum MessageType { FIRSTTYPE, SECONDTYPE, THIRDTYPE, FOURTHTYPE }
 
     private MessageType message;
 

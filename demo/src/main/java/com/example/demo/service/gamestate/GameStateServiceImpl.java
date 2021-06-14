@@ -37,7 +37,7 @@ public class GameStateServiceImpl implements GameStateService {
         if (player.equals(GameState.CurrentPlayer.FIRSTPLAYER)) {
             correctToken = allUsers.getTokenByUsername(users.get(0).getUsername());
         } else {
-            correctToken = allUsers.getTokenByUsername(users.get(0).getUsername());
+            correctToken = allUsers.getTokenByUsername(users.get(1).getUsername());
         }
         return correctToken.equals(token);
     }
