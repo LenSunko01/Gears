@@ -106,7 +106,6 @@ public class GameStateServiceImpl implements GameStateService {
     }
 
     private void endGame(GameState gameState) {
-        logger.info("End game start");
         var buffer = gameState.getUsers();
         var firstUser = buffer.get(0);
         var secondUser = buffer.get(1);
@@ -144,6 +143,5 @@ public class GameStateServiceImpl implements GameStateService {
         }
         allUsers.updatePointsById(winner.getId(), winnerPoints + pointsDifference);
         allUsers.updatePointsById(loser.getId(), loserPoints - pointsDifference);
-        logger.info("End game end");
     }
 }

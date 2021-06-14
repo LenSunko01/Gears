@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private static final Log logger = LogFactory.getLog(UserController.class);
     private final AllUsersDao allUsers;
     private final RegistrationService registrationService;
 
