@@ -1,6 +1,6 @@
 package ru.hse.gears.service.gamestate;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.users.AllUsersDao;
 import ru.hse.gears.dao.gamestate.GameStateDao;
 import ru.hse.gears.models.dto.Board;
 import ru.hse.gears.models.dto.GameState;
@@ -112,6 +112,7 @@ public class GameStateServiceImpl implements GameStateService {
         var currentGameState = gameState.getCurrentGameState();
         gameStateRepository.deleteGame(gameState.getId());
         logger.info("Game deleted");
+        //TODO: залоггировать какой айди удалили
         allUsers.updateTotalGamesById(firstUser.getId(), firstUser.getTotalNumberOfGames() + 1);
         allUsers.updateTotalGamesById(secondUser.getId(), secondUser.getTotalNumberOfGames() + 1);
         if (currentGameState == GameState.CurrentGameState.DRAW) {

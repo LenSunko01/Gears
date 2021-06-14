@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+//TODO: пихнуть ближе к ДАО
 @Component
 public class SqliteUtils {
     private final Map<String, Connection> connections = new HashMap<>();

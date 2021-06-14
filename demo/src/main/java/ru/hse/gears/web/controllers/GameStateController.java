@@ -179,7 +179,7 @@ public class GameStateController {
         });
         return output;
     }
-
+    //TODO: перенос в сервис??
     private void onGameCreation(Long id) {
         logger.info("In onGameCreation metod with id " + id);
         lockGameMap.putIfAbsent(id, new ReentrantLock());

@@ -1,6 +1,6 @@
 package ru.hse.gears.service.registration;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.users.AllUsersDao;
 import ru.hse.gears.models.dto.User;
 import ru.hse.gears.service.token.TokenService;
 import ru.hse.gears.web.exceptions.InvalidPasswordException;

@@ -1,6 +1,6 @@
 package ru.hse.gears.service.token;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.users.AllUsersDao;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;

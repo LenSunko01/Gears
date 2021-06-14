@@ -1,5 +1,6 @@
 package ru.hse.gears.web.controllers;
 
+//TODO: rename to Constants, constants - JJJJ_JJJJJ
 public class ControllersConstants {
     public final static Long getUsersTimeoutInMilliseconds = 2000L;
     public final static Long getRandomUserTimeoutInMilliseconds = 100L;

@@ -1,6 +1,6 @@
-package ru.hse.gears.dao.allusers.sqlite;
+package ru.hse.gears.dao.users.sqlite;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.users.AllUsersDao;
 import ru.hse.gears.models.dto.User;
 import ru.hse.gears.utils.SqliteUtils;
 import ru.hse.gears.web.controllers.UserController;

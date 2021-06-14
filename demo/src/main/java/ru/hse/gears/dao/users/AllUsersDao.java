@@ -1,4 +1,4 @@
-package ru.hse.gears.dao.allusers;
+package ru.hse.gears.dao.users;
 
 import ru.hse.gears.models.dto.User;
 
