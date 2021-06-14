@@ -144,7 +144,7 @@ public class UserControllerTests {
         result.getAsyncResult();
         mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$").value("Exception"));
     }
 
@@ -184,7 +184,7 @@ public class UserControllerTests {
         result.getAsyncResult();
         mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$").value("Exception"));
     }
 
@@ -231,7 +231,7 @@ public class UserControllerTests {
                 .andExpect(request().asyncStarted()).andReturn();
         mockMvc.perform(asyncDispatch(result))
                 .andDo(print())
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$").value("Exception"));
     }
 

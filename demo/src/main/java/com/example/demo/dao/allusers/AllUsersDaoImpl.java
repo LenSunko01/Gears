@@ -93,7 +93,7 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public User updatePicture(String username, byte[] picture) {
+    public User updatePictureByUsername(String username, byte[] picture) {
         var user = usernameToUser.get(username);
         if (user == null) {
             return null;
@@ -108,8 +108,19 @@ public class AllUsersDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public byte[] getPicture(String username) {
+    public User updatePictureById(Long id, byte[] picture) {
+        var username = idToUser.get(id).getUsername();
+        return updatePictureByUsername(username, picture);
+    }
+
+    @Override
+    public byte[] getPictureByUsername(String username) {
         return userToPicture.get(usernameToUser.get(username));
+    }
+
+    @Override
+    public byte[] getPictureById(Long id) {
+        return userToPicture.get(idToUser.get(id));
     }
 
     @Override
@@ -140,6 +151,11 @@ public class AllUsersDaoImpl implements AllUsersDao {
             return null;
         }
         return userToToken.get(user);
+    }
+
+    @Override
+    public String getTokenById(Long id) {
+        return getTokenByUsername(idToUser.get(id).getUsername());
     }
 
     @Override

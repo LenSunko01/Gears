@@ -35,13 +35,17 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     private static final String INSERT_USER = "insert into user_state(user_login, user_password, " +
             "user_token, points, total_games, games_won, games_lost, picture) values (?, ?, ?, ?, ?, ?, ?,?)";
 
-    private static final String GET_USER_BY_USER_ID = "select * from user_state where id = ?";
+    private static final String GET_USER_BY_ID = "select * from user_state where id = ?";
+
+    private static final String GET_TOKEN_BY_ID = "select user_token from user_state where id = ?";
 
     private static final String GET_ALL_USERS = "select * from user_state";
 
     private static final String GET_USERS_SORTED = "select * from user_state order by points desc";
 
     private static final String GET_PICTURE_BY_USERNAME = "select picture from user_state where user_login = ?";
+
+    private static final String GET_PICTURE_BY_ID = "select picture from user_state where id = ?";
 
     private static final String INSERT_TOKEN_BY_USERNAME = "update user_state set user_token=? where user_login=?";
 
@@ -64,6 +68,8 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     private static final String INSERT_GAMES_LOST_BY_ID = "update user_state set games_lost=? where id=?";
 
     private static final String INSERT_PICTURE_BY_USERNAME = "update user_state set picture=? where user_login=?";
+
+    private static final String INSERT_PICTURE_BY_ID = "update user_state set picture=? where id=?";
 
     Connection conn;
 
@@ -188,6 +194,20 @@ public class SqliteUserDaoImpl implements AllUsersDao {
         try {
             getUserStmt = conn.prepareStatement(GET_TOKEN_BY_USERNAME);
             getUserStmt.setString(1, username);
+            ResultSet rs = getUserStmt.executeQuery();
+            return rs.getString("user_token");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLUserBaseException(e);
+        }
+    }
+
+    @Override
+    public String getTokenById(Long id) {
+        PreparedStatement getUserStmt;
+        try {
+            getUserStmt = conn.prepareStatement(GET_TOKEN_BY_ID);
+            getUserStmt.setLong(1, id);
             ResultSet rs = getUserStmt.executeQuery();
             return rs.getString("user_token");
         } catch (SQLException e) {
@@ -336,7 +356,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public User updatePicture(String username, byte[] picture) {
+    public User updatePictureByUsername(String username, byte[] picture) {
         PreparedStatement insertGameStateStmt;
         try {
             insertGameStateStmt = conn.prepareStatement(INSERT_PICTURE_BY_USERNAME);
@@ -351,11 +371,40 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     }
 
     @Override
-    public byte[] getPicture(String username) {
+    public User updatePictureById(Long id, byte[] picture) {
+        PreparedStatement insertGameStateStmt;
+        try {
+            insertGameStateStmt = conn.prepareStatement(INSERT_PICTURE_BY_ID);
+            insertGameStateStmt.setBytes(1, picture);
+            insertGameStateStmt.setLong(2, id);
+            insertGameStateStmt.execute();
+            return getUserById(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLUserBaseException(e);
+        }
+    }
+
+    @Override
+    public byte[] getPictureByUsername(String username) {
         PreparedStatement getUserStmt;
         try {
             getUserStmt = conn.prepareStatement(GET_PICTURE_BY_USERNAME);
             getUserStmt.setString(1, username);
+            ResultSet rs = getUserStmt.executeQuery();
+            return rs.getBytes("picture");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLUserBaseException(e);
+        }
+    }
+
+    @Override
+    public byte[] getPictureById(Long id) {
+        PreparedStatement getUserStmt;
+        try {
+            getUserStmt = conn.prepareStatement(GET_PICTURE_BY_ID);
+            getUserStmt.setLong(1, id);
             ResultSet rs = getUserStmt.executeQuery();
             return rs.getBytes("picture");
         } catch (SQLException e) {
@@ -429,7 +478,7 @@ public class SqliteUserDaoImpl implements AllUsersDao {
     public User getUserById(Long id) {
         PreparedStatement userStateStmt;
         try {
-            userStateStmt = conn.prepareStatement(GET_USER_BY_USER_ID);
+            userStateStmt = conn.prepareStatement(GET_USER_BY_ID);
             userStateStmt.setLong(1, id);
             ResultSet rs = userStateStmt.executeQuery();
             return getUserByQuery(rs);

@@ -3,12 +3,10 @@ package com.example.demo.web.controllers;
 import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.Message;
-import com.example.demo.models.dto.User;
 import com.example.demo.service.gamestate.GameStateService;
 import com.example.demo.web.exceptions.AuthenticationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +15,9 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.AbstractMap;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.example.demo.web.controllers.ControllersConstants.*;
 
@@ -24,12 +25,16 @@ import static com.example.demo.web.controllers.ControllersConstants.*;
 public class GameStateController {
     private static final Log logger = LogFactory.getLog(GameStateController.class);
     private final GameStateService gameStateService;
+    ConcurrentHashMap<Long, Lock> lockGameMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Lock> lockMessageMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Condition> conditionGameChangedMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Condition> conditionInitMap = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Condition> conditionMessageMap = new ConcurrentHashMap<>();
     ConcurrentHashMap<AbstractMap.SimpleEntry<Long, GameState.CurrentPlayer>, ConcurrentLinkedQueue<Message>> messages = new ConcurrentHashMap<>();
+
     public GameStateController(GameStateService gameStateService) {
         this.gameStateService = gameStateService;
     }
-
-    private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
 
     @GetMapping("/game/{id}/player/{currentPlayer}")
     DeferredResult<ResponseEntity<GameState>> gameState(
@@ -47,45 +52,34 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        logger.info(Thread.currentThread().getId());
-
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
+            Lock lock = new ReentrantLock();
             try {
-                logger.info(Thread.currentThread().getId());
-                logger.info("Trying to get game state, before while");
-                logger.info(currentPlayer);
-                var res = gameStateService.getStateById(id, token);
+                lock = lockGameMap.get(id);
+                lock.lock();
+                var res = gameStateService.getStateById(id, token, currentPlayer);
                 while (!(res.getCurrentPlayer().equals(currentPlayer)
                         && res.isFirstPlayerHasInitializedBoard()
                         && res.isSecondPlayerHasInitializedBoard())
                 ) {
-
-                    logger.info(Thread.currentThread().getId());
-                    logger.info(res.getCurrentPlayer());
-                    logger.info(res.isFirstPlayerHasInitializedBoard());
-                    logger.info(res.isSecondPlayerHasInitializedBoard());
-                    logger.info(currentPlayer);
-                    logger.info("Game not ready yet, wait for some time " + currentPlayer);
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
-                        logger.info("------------------------------Exception-------------------", ignored);
-                    }
-                    logger.info("-------------------Woke up from sleep " + currentPlayer);
-                    res = gameStateService.getStateById(id, token);
-                    logger.info(output.isSetOrExpired());
-                    if (output.isSetOrExpired()) {
-                        logger.info("----------Request expired");
-                        break;
-                    }
+                    logger.info("Get game waiting for condition " + currentPlayer);
+                    var condition = conditionGameChangedMap.get(id);
+                    condition.await();
+                    res = gameStateService.getStateById(id, token, currentPlayer);
                 }
                 logger.info("Set game");
                 output.setResult(ResponseEntity.ok(res));
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
                 logger.info("Exception while executing GET game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET game request: " + e.getMessage());
+            } finally {
+                lock.unlock();
             }
             logger.info("Thread freed");
         });
@@ -110,16 +104,26 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
+            Lock lock = new ReentrantLock();
             try {
-                gameStateService.updateStateById(id, token, newGameState);
+                lock = lockGameMap.get(id);
+                lock.lock();
+                gameStateService.updateStateById(id, token, newGameState, currentPlayer);
                 output.setResult(ResponseEntity.ok("Game updated"));
+                conditionGameChangedMap.get(id).signalAll();
                 logger.info("Game updated");
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            } catch (AuthenticationException e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
-                logger.info("Exception while executing GET user request: " + e.getMessage());
+                logger.info("Exception while executing POST game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST game request: " + e.getMessage());
+            } finally {
+                lock.unlock();
             }
             logger.info("Thread freed");
         });
@@ -141,31 +145,49 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
+            onGameCreation(id);
+            Lock lock = new ReentrantLock();
             try {
-                var res = gameStateService.getStateById(id, token);
+                lock = lockGameMap.get(id);
+                lock.lock();
+                var res = gameStateService.getStateById(id, token, GameState.CurrentPlayer.SECONDPLAYER);
                 while (!res.isFirstPlayerHasInitializedBoard()) {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
-                        logger.info("------------------------------Exception-------------------", ignored);
-                    }
-                    res = gameStateService.getStateById(id, token);
-                    if (output.isSetOrExpired()) {
-                        logger.info("----------Request expired");
-                        break;
-                    }
+                    var condition = conditionInitMap.get(id);
+                    condition.await();
+                    res = gameStateService.getStateById(id, token, GameState.CurrentPlayer.SECONDPLAYER);
                 }
                 output.setResult(ResponseEntity.ok(res));
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
                 logger.info("Exception while executing GET board request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET board request: " + e.getMessage());
+            } finally {
+                lock.unlock();
             }
             logger.info("Thread freed");
         });
         return output;
+    }
+
+    private void onGameCreation(Long id) {
+        lockGameMap.putIfAbsent(id, new ReentrantLock());
+        lockMessageMap.putIfAbsent(id, new ReentrantLock());
+        var lockGame = lockGameMap.get(id);
+        conditionInitMap.putIfAbsent(id, lockGame.newCondition());
+        conditionGameChangedMap.putIfAbsent(id, lockGame.newCondition());
+        var lockMessage = lockMessageMap.get(id);
+        conditionMessageMap.putIfAbsent(id, lockMessage.newCondition());
+        var playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.FIRSTPLAYER);
+        messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
+        playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.SECONDPLAYER);
+        messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
+        logger.info("On game creation completed");
     }
 
     @PostMapping("/init/{id}/player/{currentPlayer}")
@@ -186,22 +208,55 @@ public class GameStateController {
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
+            onGameCreation(id);
+            Lock lock = new ReentrantLock();
             try {
+                lock = lockGameMap.get(id);
+                lock.lock();
                 var res = gameStateService.updateBoardById(id, token, currentPlayer, board);
                 logger.info(res.getFirstPlayerBoard().equals(board));
                 output.setResult(ResponseEntity.ok(res));
+                conditionInitMap.get(id).signalAll();
+                conditionGameChangedMap.get(id).signalAll();
                 logger.info("Completed POST init game request");
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
-                logger.info("Exception while executing POST init game request: " + e.getMessage());
+                logger.info("Exception while executing POST init game request1: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST init game request2: " + e.getMessage());
+            } finally {
+                lock.unlock();
             }
             logger.info("Thread freed");
         });
 
         return output;
+    }
+
+    private void onGameDeletion(Long id) {
+        var lock = lockGameMap.get(id);
+        if (lock == null) {
+            return;
+        }
+        try {
+            lock.lock();
+            if (!gameStateService.checkGameExists(id)) {
+                lockGameMap.remove(id);
+                lockMessageMap.remove(id);
+                conditionInitMap.remove(id);
+                conditionGameChangedMap.remove(id);
+                conditionMessageMap.remove(id);
+                messages.remove(new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.FIRSTPLAYER));
+                messages.remove(new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.SECONDPLAYER));
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     @DeleteMapping("/game/{id}/player/{currentPlayer}")
@@ -213,22 +268,29 @@ public class GameStateController {
         logger.info("Received DELETE game state by ID request");
         var token = headers.getFirst("token");
         DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(deleteGameTimeoutInMilliseconds);
-        output.onCompletion(() -> logger.info("DELETE game by ID request completed"));
+        output.onCompletion(() -> {
+            onGameDeletion(id);
+            logger.info("DELETE game by ID request completed");
+        });
         output.onTimeout(() -> {
+            onGameDeletion(id);
             logger.info("Timeout during executing DELETE game request");
             output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
                     .body("Request timeout occurred."));
         });
 
-        workerPool.submit(() -> {
+        ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
             try {
-                gameStateService.deleteGameState(id, token);
-                messages.remove(new AbstractMap.SimpleEntry<>(id, currentPlayer));
+                gameStateService.deleteGameState(id, token, currentPlayer);
                 output.setResult(ResponseEntity.ok("Game deleted"));
                 logger.info("Completed DELETE game request");
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing DELETE game request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(e.getMessage()));
                 logger.info("Exception while executing DELETE game request: " + e.getMessage());
             }
@@ -257,20 +319,32 @@ public class GameStateController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
+            Lock lock = new ReentrantLock();
             try {
+                lock = lockMessageMap.get(id);
+                lock.lock();
                 if (!gameStateService.checkGameExists(id)) {
                     throw new Exception("Game does not exist");
                 }
-                gameStateService.validateToken(id, token);
+                if (!gameStateService.validateToken(id, token, currentPlayer)) {
+                    throw new AuthenticationException();
+                }
                 var playerEntry = new AbstractMap.SimpleEntry<>(id, currentPlayer);
-                messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
                 messages.get(playerEntry).add(message);
+                var condition = conditionMessageMap.get(id);
+                condition.signalAll();
                 output.setResult(ResponseEntity.ok("Message sent"));
                 logger.info("Completed POST message request");
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
                 logger.info("Exception while executing POST message request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing POST message request: " + e.getMessage());
+            } finally {
+                lock.unlock();
             }
             logger.info("Thread freed");
         });
@@ -296,39 +370,41 @@ public class GameStateController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing in separate thread");
+            Lock lock = new ReentrantLock();
             try {
+                lock = lockMessageMap.get(id);
+                lock.lock();
                 if (!gameStateService.checkGameExists(id)) {
                     throw new Exception("Game does not exist");
                 }
-                gameStateService.validateToken(id, token);
+                if (!gameStateService.validateToken(id, token, currentPlayer)) {
+                    throw new AuthenticationException();
+                }
                 AbstractMap.SimpleEntry<Long, GameState.CurrentPlayer> playerEntry;
                 if (currentPlayer == GameState.CurrentPlayer.FIRSTPLAYER) {
                     playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.SECONDPLAYER);
                 } else {
                     playerEntry = new AbstractMap.SimpleEntry<>(id, GameState.CurrentPlayer.FIRSTPLAYER);
                 }
-                messages.putIfAbsent(playerEntry, new ConcurrentLinkedQueue<>());
                 var res = messages.get(playerEntry).poll();
+                var condition = conditionMessageMap.get(id);
                 while (res == null) {
-                    logger.info("No messages yet, wait for some time " + currentPlayer);
-                    try {
-                        Thread.sleep(800);
-                    } catch (InterruptedException ignored) {
-                        logger.info("------------------------------Exception-------------------", ignored);
-                    }
+                    condition.await();
                     logger.info("-------------------Woke up from sleep " + currentPlayer);
                     res = messages.get(playerEntry).poll();
-                    if (output.isSetOrExpired()) {
-                        logger.info("----------Request expired");
-                        break;
-                    }
                 }
                 logger.info("Got message");
                 output.setResult(ResponseEntity.ok(res));
-            } catch (Exception e) {
+            } catch (AuthenticationException e) {
                 output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(e.getMessage()));
                 logger.info("Exception while executing GET message request: " + e.getMessage());
+            } catch (Exception e) {
+                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage()));
+                logger.info("Exception while executing GET message request: " + e.getMessage());
+            } finally {
+                lock.unlock();
             }
             logger.info("Thread freed");
         });

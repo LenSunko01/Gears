@@ -5,7 +5,6 @@ import com.example.demo.dao.gamestate.GameStateDao;
 import com.example.demo.models.dto.Board;
 import com.example.demo.models.dto.GameState;
 import com.example.demo.models.dto.User;
-import com.example.demo.service.user.UserService;
 import com.example.demo.web.controllers.UserController;
 import com.example.demo.web.exceptions.AuthenticationException;
 import org.apache.commons.logging.Log;
@@ -30,27 +29,37 @@ public class GameStateServiceImpl implements GameStateService {
         this.allUsers = allUsers;
     }
 
-    /* accepts game ID and throws exception if token matches none of the users in the game */
     @Override
-    public void validateToken(Long id, String token) {
+    public boolean validateToken(Long id, String token, GameState.CurrentPlayer player) {
         var game = gameStateRepository.getStateById(id);
         var users = game.getUsers();
-        var correctTokenFirstUser = allUsers.getTokenByUsername(users.get(0).getUsername());
-        var correctTokenSecondUser = allUsers.getTokenByUsername(users.get(1).getUsername());
-        if (!correctTokenFirstUser.equals(token) && !correctTokenSecondUser.equals(token)) {
-            throw new AuthenticationException();
+        String correctToken;
+        if (player.equals(GameState.CurrentPlayer.FIRSTPLAYER)) {
+            correctToken = allUsers.getTokenByUsername(users.get(0).getUsername());
+        } else {
+            correctToken = allUsers.getTokenByUsername(users.get(1).getUsername());
         }
+        return correctToken.equals(token);
     }
 
     @Override
-    public GameState getStateById(Long id, String token) {
-        validateToken(id, token);
+    public GameState getStateById(Long id, String token, GameState.CurrentPlayer player) {
+        if (!validateToken(id, token, player)) {
+            throw new AuthenticationException();
+        }
         return gameStateRepository.getStateById(id);
     }
 
     @Override
-    public GameState updateStateById(Long id, String token, GameState newGameState) {
-        validateToken(id, token);
+    public GameState updateStateById(
+            Long id,
+            String token,
+            GameState newGameState,
+            GameState.CurrentPlayer player
+    ) {
+        if (!validateToken(id, token, player)) {
+            throw new AuthenticationException();
+        }
         logger.info("Validated token, trying to update game state");
         gameStateRepository.updateGameState(id, newGameState);
         return newGameState;
@@ -58,21 +67,28 @@ public class GameStateServiceImpl implements GameStateService {
 
     @Override
     public GameState updateBoardById(Long id, String token, GameState.CurrentPlayer player, Board board) {
-        validateToken(id, token);
+        if (!validateToken(id, token, player)) {
+            throw new AuthenticationException();
+        }
         logger.info("Validated token, trying to update board");
         return gameStateRepository.updateBoardInGameState(id, player, board);
     }
 
     @Override
-    public void deleteGameState(Long id, String token) {
-        validateToken(id, token);
+    public void deleteGameState(Long id, String token, GameState.CurrentPlayer player) {
+        if (!validateToken(id, token, player)) {
+            throw new AuthenticationException();
+        }
         var gameState = gameStateRepository.getStateById(id);
-        var count = gameState.getCountPlayersLeftGame();
-        if (count == 1) {
+        if (player.equals(GameState.CurrentPlayer.FIRSTPLAYER)) {
+            gameState.setFirstPlayerHasEndedGame(true);
+        } else {
+            gameState.setSecondPlayerHasEndedGame(true);
+        }
+        if (gameState.isFirstPlayerHasEndedGame() && gameState.isSecondPlayerHasEndedGame()) {
             endGame(gameState);
             return;
         }
-        gameState.setCountPlayersLeftGame(1);
         gameStateRepository.updateGameState(id, gameState);
     }
 
@@ -88,11 +104,13 @@ public class GameStateServiceImpl implements GameStateService {
     }
 
     private void endGame(GameState gameState) {
+        logger.info("End game start");
         var buffer = gameState.getUsers();
         var firstUser = buffer.get(0);
         var secondUser = buffer.get(1);
         var currentGameState = gameState.getCurrentGameState();
         gameStateRepository.deleteGame(gameState.getId());
+        logger.info("Game deleted");
         allUsers.updateTotalGamesById(firstUser.getId(), firstUser.getTotalNumberOfGames() + 1);
         allUsers.updateTotalGamesById(secondUser.getId(), secondUser.getTotalNumberOfGames() + 1);
         if (currentGameState == GameState.CurrentGameState.DRAW) {
@@ -124,5 +142,6 @@ public class GameStateServiceImpl implements GameStateService {
         }
         allUsers.updatePointsById(winner.getId(), winnerPoints + pointsDifference);
         allUsers.updatePointsById(loser.getId(), loserPoints - pointsDifference);
+        logger.info("End game end");
     }
 }

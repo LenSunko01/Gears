@@ -1,10 +1,7 @@
 package com.example.demo.service.user;
 
 import com.example.demo.models.dto.User;
-import org.springframework.data.util.Pair;
-import org.springframework.web.context.request.async.DeferredResult;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +13,7 @@ public interface UserService {
 
     List<User> getSortedByRatingList(int numberOfUsers);
 
-    void validateToken(Long id, String token);
+    boolean validateToken(Long id, String token);
 
     User updateUsername(Long id, String newUsername, String token);
 
@@ -34,5 +31,5 @@ public interface UserService {
 
     User updatePoints(String username, Long newPoints, String token);
 
-    byte[] getPictureById(Long id);
+    byte[] getPictureById(Long id, String token);
 }

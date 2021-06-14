@@ -28,10 +28,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         checkPasswordIsValid(password);
 
         var token = tokenService.generateNewToken();
-        var user = allUsers.addUser(username, password, token, newUserPoints);
+        allUsers.addUser(username, password, token, newUserPoints);
         return new User.UserInformation(token, allUsers.getIdByUsername(username));
     }
 
+    @Override
     public void checkLoginIsValid(String username) {
         if (username.length() == 0) {
             throw new InvalidUsernameException("Login can not be an empty string");
@@ -42,9 +43,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
     }
 
+    @Override
     public void checkPasswordIsValid(String password) {
         if (password.length() == 0) {
-            throw new InvalidPasswordException("Seriously? Empty password? I thought better about you");
+            throw new InvalidPasswordException("Seriously? Empty password? I thought better of you");
         }
 
         int lower = 0;
