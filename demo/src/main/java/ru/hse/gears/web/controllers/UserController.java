@@ -60,16 +60,8 @@ public class UserController {
         });
 
         ForkJoinPool.commonPool().submit(() -> {
-            try {
-                logger.info("Processing GET users request in separate thread");
-                var list = userService.getAll();
-                output.setResult(ResponseEntity.ok(list));
-                logger.info("Completed GET users request");
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET users request: " + e.getMessage());
-            }
+            logger.info("Processing GET users request in separate thread");
+            getUsers(output);
             logger.info("Thread freed from GET users request");
         });
 
@@ -88,16 +80,8 @@ public class UserController {
         });
 
         ForkJoinPool.commonPool().submit(() -> {
-            try {
-                logger.info("Processing GET rating in separate thread");
-                var list = userService.getSortedByRatingList(ControllersConstants.numberOfUsersShownInRating);
-                output.setResult(ResponseEntity.ok(list));
-                logger.info("Completed GET rating request");
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET rating request: " + e.getMessage());
-            }
+            logger.info("Processing GET rating in separate thread");
+            getRating(output);
             logger.info("Thread freed from GET rating request");
         });
 
@@ -116,16 +100,8 @@ public class UserController {
         });
 
         ForkJoinPool.commonPool().submit(() -> {
-            try {
-                logger.info("Processing GET random in separate thread");
-                var user = userService.getRandomUser();
-                output.setResult(ResponseEntity.ok(user));
-                logger.info("Completed GET random request");
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET random user request: " + e.getMessage());
-            }
+            logger.info("Processing GET random in separate thread");
+            getRandomUser(output);
             logger.info("Thread freed from GET random request");
         });
 
@@ -145,20 +121,8 @@ public class UserController {
         });
 
         ForkJoinPool.commonPool().submit(() -> {
-            try {
-                logger.info("Processing GET picture request with id " + id + " in separate thread");
-                var picture = userService.getPictureById(id, token);
-                output.setResult(ResponseEntity.ok(new PictureWrapper(picture)));
-                logger.info("Completed GET picture request with id " + id);
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET picture request with id " + id + " : " + e.getMessage());
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET picture request with id " + id + " : " + e.getMessage());
-            }
+            logger.info("Processing GET picture request with id " + id + " in separate thread");
+            getPictureById(id, token, output);
             logger.info("Thread freed from GET picture request with id " + id);
         });
 
@@ -178,20 +142,7 @@ public class UserController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing POST register request with username " + username + " in separate thread");
-            try {
-                var userEntry = registerService.registerUser(username, password);
-                logger.info("Registered user " + username);
-                output.setResult(ResponseEntity.ok(userEntry));
-            } catch (InvalidUsernameException | InvalidPasswordException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing register request with username " + username + " : " + e.getMessage());
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing register request with username " + username + " : " + e.getMessage());
-            }
-
+            register(username, password, output);
             logger.info("Thread freed from POST register request with username " + username);
         });
 
@@ -211,20 +162,7 @@ public class UserController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing POST login user request with username " + username + " in separate thread");
-            try {
-                var userEntry = loginService.loginUser(username, password);
-                logger.info("User logged in with username " + username);
-                output.setResult(ResponseEntity.ok(userEntry));
-            } catch (InvalidUsernameException | InvalidPasswordException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing login request with username " + username + " : " + e.getMessage());
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing login request with username " + username + " : " + e.getMessage());
-            }
-
+            login(username, password, output);
             logger.info("Thread freed from POST login request with username " + username);
         });
 
@@ -245,33 +183,11 @@ public class UserController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing GET user request with id " + id + " in separate thread");
-            try {
-                User user = userService.getUserById(id, token);
-                logger.info("Completed GET user request with id " + id);
-                output.setResult(ResponseEntity.ok(user));
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET user request with id " + id + " : " + e.getMessage());
-            } catch (Exception e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing GET user request with id " + id + " : " + e.getMessage());
-            }
-
+            getUser(id, token, output);
             logger.info("Thread freed from GET user request with id " + id);
         });
 
         return output;
-    }
-
-    private void removeFromMatchingQueue(DeferredResult<Map.Entry<Long, Boolean>> entry) {
-        try {
-            queueLock.lock();
-            usersReadyToPlay.remove(entry);
-        } finally {
-            queueLock.unlock();
-        }
     }
 
     /*
@@ -296,34 +212,237 @@ public class UserController {
 
         ForkJoinPool.commonPool().submit(() -> {
             logger.info("Processing POST find opponent request with username " + username + " in separate thread");
-            User user;
-            try {
-                user = userService.getUserByUsername(username, token);
-                logger.info("Putting " + username + " to matching queue");
-                try {
-                    queueLock.lock();
-                    usersReadyToPlay.put(output, user);
-                    logger.info(usersReadyToPlay.size());
-                } finally {
-                    queueLock.unlock();
-                }
-                logger.info("Trying to match opponents");
-                matchOpponents();
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing POST find opponent request with username " + username + " : " + e.getMessage());
-            } catch (Exception e) {
-
-                logger.info("Exception while executing POST find opponent request with username " + username + " : " + e.getMessage());
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-            }
-
+            putToMatchingQueueAndMatch(username, token, output);
             logger.info("Thread freed from POST find opponent request with username " + username);
         });
 
         return output;
+    }
+
+    @PutMapping("/username/{id}")
+    DeferredResult<User> updateUsername(
+            @RequestHeader HttpHeaders headers, @RequestBody String newUsername, @PathVariable Long id
+    ) {
+        logger.info("Received PUT username request");
+        var token = headers.getFirst("token");
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putUsernameTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("PUT request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing PUT username request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            updateUsername(newUsername, id, token, output);
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    @PutMapping("/picture/{id}")
+    DeferredResult<User> updatePicture(
+            @RequestHeader HttpHeaders headers, @RequestBody byte[] newPicture, @PathVariable Long id
+    ) {
+        logger.info("Received PUT picture request");
+        var token = headers.getFirst("token");
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPictureTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("PUT request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing PUT picture request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            updatePicture(newPicture, id, token, output);
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    @PutMapping("/password/{id}")
+    DeferredResult<User> updatePassword(
+            @RequestHeader HttpHeaders headers, @RequestBody String newPassword, @PathVariable Long id
+    ) {
+        logger.info("Received PUT password request");
+        var token = headers.getFirst("token");
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPasswordTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("PUT request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing PUT password request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            updatePassword(newPassword, id, token, output);
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    @PutMapping("/points/{id}")
+    DeferredResult<User> updatePoints(
+            @RequestHeader HttpHeaders headers, @RequestBody Long newPoints, @PathVariable Long id
+    ) {
+        logger.info("Received PUT points request");
+        var token = headers.getFirst("token");
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPointsTimeoutInMilliseconds);
+        output.onCompletion(() -> logger.info("PUT request completed"));
+        output.onTimeout(() -> {
+            logger.info("Timeout during executing PUT points request");
+            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout occurred."));
+        });
+
+        ForkJoinPool.commonPool().submit(() -> {
+            logger.info("Processing in separate thread");
+            updatePoints(newPoints, id, token, output);
+            logger.info("Thread freed");
+        });
+
+        return output;
+    }
+
+    private void getUsers(DeferredResult<ResponseEntity<Map<String, Long>>> output) {
+        try {
+            var list = userService.getAll();
+            output.setResult(ResponseEntity.ok(list));
+            logger.info("Completed GET users request");
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing GET users request: " + e.getMessage());
+        }
+    }
+
+    private void getRating(DeferredResult<ResponseEntity<List<User>>> output) {
+        try {
+            var list = userService.getSortedByRatingList(ControllersConstants.numberOfUsersShownInRating);
+            output.setResult(ResponseEntity.ok(list));
+            logger.info("Completed GET rating request");
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing GET rating request: " + e.getMessage());
+        }
+    }
+
+    private void getRandomUser(DeferredResult<ResponseEntity<Map.Entry<String, Long>>> output) {
+        try {
+            var user = userService.getRandomUser();
+            output.setResult(ResponseEntity.ok(user));
+            logger.info("Completed GET random request");
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing GET random user request: " + e.getMessage());
+        }
+    }
+
+    private void getPictureById(Long id, String token, DeferredResult<ResponseEntity<PictureWrapper>> output) {
+        try {
+            var picture = userService.getPictureById(id, token);
+            output.setResult(ResponseEntity.ok(new PictureWrapper(picture)));
+            logger.info("Completed GET picture request with id " + id);
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing GET picture request with id " + id + " : " + e.getMessage());
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing GET picture request with id " + id + " : " + e.getMessage());
+        }
+    }
+
+    private void register(String username, String password, DeferredResult<ResponseEntity<User.UserInformation>> output) {
+        try {
+            var userEntry = registerService.registerUser(username, password);
+            logger.info("Registered user " + username);
+            output.setResult(ResponseEntity.ok(userEntry));
+        } catch (InvalidUsernameException | InvalidPasswordException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(e.getMessage()));
+            logger.error("Invalid username/password exception while executing register request with username " + username + " : " + e.getMessage());
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing register request with username " + username + " : " + e.getMessage());
+        }
+    }
+
+    private void login(String username, String password, DeferredResult<ResponseEntity<User.UserInformation>> output) {
+        try {
+            var userEntry = loginService.loginUser(username, password);
+            logger.info("User logged in with username " + username);
+            output.setResult(ResponseEntity.ok(userEntry));
+        } catch (InvalidUsernameException | InvalidPasswordException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(e.getMessage()));
+            logger.error("Invalid username/password exception while executing login request with username " + username + " : " + e.getMessage());
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing login request with username " + username + " : " + e.getMessage());
+        }
+    }
+
+    private void getUser(Long id, String token, DeferredResult<ResponseEntity<User>> output) {
+        try {
+            User user = userService.getUserById(id, token);
+            logger.info("Completed GET user request with id " + id);
+            output.setResult(ResponseEntity.ok(user));
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing GET user request with id " + id + " : " + e.getMessage());
+        } catch (Exception e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+            logger.error("Exception while executing GET user request with id " + id + " : " + e.getMessage());
+        }
+    }
+
+    private void removeFromMatchingQueue(DeferredResult<Map.Entry<Long, Boolean>> entry) {
+        try {
+            queueLock.lock();
+            usersReadyToPlay.remove(entry);
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    private void putToMatchingQueueAndMatch(String username, String token, DeferredResult<Map.Entry<Long, Boolean>> output) {
+        User user;
+        try {
+            user = userService.getUserByUsername(username, token);
+            logger.info("Putting " + username + " to matching queue");
+            try {
+                queueLock.lock();
+                usersReadyToPlay.put(output, user);
+                logger.info(usersReadyToPlay.size());
+            } finally {
+                queueLock.unlock();
+            }
+            logger.info("Trying to match opponents");
+            matchOpponents();
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing POST find opponent request with username " + username + " : " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception while executing POST find opponent request with username " + username + " : " + e.getMessage());
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+        }
     }
 
     private void matchOpponents() {
@@ -361,151 +480,75 @@ public class UserController {
         }
     }
 
-    @PutMapping("/username/{id}")
-    DeferredResult<User> updateUsername(
-            @RequestHeader HttpHeaders headers, @RequestBody String newUsername, @PathVariable Long id
-    ) {
-        logger.info("Received PUT username request");
-        var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putUsernameTimeoutInMilliseconds);
-        output.onCompletion(() -> logger.info("PUT request completed"));
-        output.onTimeout(() -> {
-            logger.info("Timeout during executing PUT username request");
-            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                    .body("Request timeout occurred."));
-        });
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            User user;
-            try {
-                user = userService.updateUsername(id, newUsername, token);
-                output.setResult(user);
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing PUT username request: " + e.getMessage());
-            } catch (Exception e) {
-                logger.info("Exception while executing PUT username request: " + e.getMessage());
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-            }
-            logger.info("Thread freed");
-        });
-
-        return output;
+    private void updateUsername(@RequestBody String newUsername, @PathVariable Long id, String token, DeferredResult<User> output) {
+        User user;
+        try {
+            user = userService.updateUsername(id, newUsername, token);
+            output.setResult(user);
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing PUT username request: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception while executing PUT username request: " + e.getMessage());
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+        }
     }
 
-    @PutMapping("/picture/{id}")
-    DeferredResult<User> updatePicture(
-            @RequestHeader HttpHeaders headers, @RequestBody byte[] newPicture, @PathVariable Long id
-    ) {
-        logger.info("Received PUT picture request");
-        var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPictureTimeoutInMilliseconds);
-        output.onCompletion(() -> logger.info("PUT request completed"));
-        output.onTimeout(() -> {
-            logger.info("Timeout during executing PUT picture request");
-            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                    .body("Request timeout occurred."));
-        });
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            User user;
-            try {
-                user = userService.updatePicture(id, newPicture, token);
-                output.setResult(user);
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing PUT username request: " + e.getMessage());
-            } catch (Exception e) {
-                logger.info("Exception while executing PUT picture request: " + e.getMessage());
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(e.getMessage()));
-            }
-            logger.info("Thread freed");
-        });
-
-        return output;
+    private void updatePicture(@RequestBody byte[] newPicture, @PathVariable Long id, String token, DeferredResult<User> output) {
+        User user;
+        try {
+            user = userService.updatePicture(id, newPicture, token);
+            output.setResult(user);
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing PUT username request: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception while executing PUT picture request: " + e.getMessage());
+            output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(e.getMessage()));
+        }
     }
 
-    @PutMapping("/password/{id}")
-    DeferredResult<User> updatePassword(
-            @RequestHeader HttpHeaders headers, @RequestBody String newPassword, @PathVariable Long id
-    ) {
-        logger.info("Received PUT password request");
-        var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPasswordTimeoutInMilliseconds);
-        output.onCompletion(() -> logger.info("PUT request completed"));
-        output.onTimeout(() -> {
-            logger.info("Timeout during executing PUT password request");
-            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                    .body("Request timeout occurred."));
-        });
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            User user;
-            try {
-                user = userService.updatePassword(id, newPassword, token);
-                output.setResult(user);
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing PUT password request: " + e.getMessage());
-            } catch (InvalidPasswordException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing PUT password request: " + e.getMessage());
-            } catch (Exception e) {
-                logger.info("Exception while executing PUT password request: " + e.getMessage());
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-            }
-            logger.info("Thread freed");
-        });
-
-        return output;
+    private void updatePassword(@RequestBody String newPassword, @PathVariable Long id, String token, DeferredResult<User> output) {
+        User user;
+        try {
+            user = userService.updatePassword(id, newPassword, token);
+            output.setResult(user);
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing PUT password request: " + e.getMessage());
+        } catch (InvalidPasswordException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(e.getMessage()));
+            logger.error("InvalidPasswordException while executing PUT password request: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception while executing PUT password request: " + e.getMessage());
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+        }
     }
 
-    @PutMapping("/points/{id}")
-    DeferredResult<User> updatePoints(
-            @RequestHeader HttpHeaders headers, @RequestBody Long newPoints, @PathVariable Long id
-    ) {
-        logger.info("Received PUT points request");
-        var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPointsTimeoutInMilliseconds);
-        output.onCompletion(() -> logger.info("PUT request completed"));
-        output.onTimeout(() -> {
-            logger.info("Timeout during executing PUT points request");
-            output.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                    .body("Request timeout occurred."));
-        });
-
-        ForkJoinPool.commonPool().submit(() -> {
-            logger.info("Processing in separate thread");
-            User user;
-            try {
-                user = userService.updatePoints(id, newPoints, token);
-                output.setResult(user);
-            } catch (AuthenticationException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing PUT points request: " + e.getMessage());
-            } catch (IllegalArgumentException e) {
-                output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(e.getMessage()));
-                logger.info("Exception while executing PUT points request: " + e.getMessage());
-            } catch (Exception e) {
-                logger.info("Exception while executing PUT points request: " + e.getMessage());
-                output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(e.getMessage()));
-            }
-            logger.info("Thread freed");
-        });
-
-        return output;
+    private void updatePoints(@RequestBody Long newPoints, @PathVariable Long id, String token, DeferredResult<User> output) {
+        User user;
+        try {
+            user = userService.updatePoints(id, newPoints, token);
+            output.setResult(user);
+        } catch (AuthenticationException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage()));
+            logger.error("AuthenticationException while executing PUT points request: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            output.setErrorResult(ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body(e.getMessage()));
+            logger.error("IllegalArgumentException while executing PUT points request: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception while executing PUT points request: " + e.getMessage());
+            output.setErrorResult(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage()));
+        }
     }
 }
