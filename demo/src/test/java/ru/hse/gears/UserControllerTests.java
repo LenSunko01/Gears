@@ -19,7 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockAsyncContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import ru.hse.gears.web.controllers.ControllersConstants;
+import ru.hse.gears.web.controllers.constants.ControllersConstants;
 
 import javax.servlet.AsyncListener;
 import java.util.*;

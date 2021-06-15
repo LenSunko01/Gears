@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.hse.gears.models.dto.constants.DTOConstants.HOLE_CAPACITY;
+
 public class Gear {
     private int degree;
     private boolean isLast;
@@ -45,8 +47,8 @@ public class Gear {
         return radius;
     }
     public void setXY(int x, int y) {
-        this.x = x + radius / 2;
-        this.y = y + radius / 2;
+        this.x = x + radius;
+        this.y = y + radius;
     }
 
     private  float x;
@@ -139,7 +141,7 @@ public class Gear {
         private int numberOfHole;
 
         public Hole(int numberOfHole) {
-            capacity = 1;
+            capacity = HOLE_CAPACITY;
             degree = 0;
             this.numberOfHole = numberOfHole;
         }

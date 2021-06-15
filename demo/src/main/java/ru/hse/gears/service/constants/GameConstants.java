@@ -1,4 +1,4 @@
-package ru.hse.gears.service;
+package ru.hse.gears.service.constants;
 
 public class GameConstants {
     public final static Long POINTS_IF_STRONGER_BEATS_WEAKER = 100L;

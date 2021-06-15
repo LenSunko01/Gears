@@ -1,4 +1,4 @@
-package ru.hse.gears.web.controllers;
+package ru.hse.gears.web.controllers.constants;
 
 public class ControllersConstants {
     public final static Long GET_USERS_TIMEOUT_IN_MILLISECONDS = 2000L;

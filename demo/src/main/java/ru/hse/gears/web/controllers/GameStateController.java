@@ -4,6 +4,7 @@ import ru.hse.gears.models.dto.Board;
 import ru.hse.gears.models.dto.GameState;
 import ru.hse.gears.models.dto.Message;
 import ru.hse.gears.service.gamestate.GameStateService;
+import ru.hse.gears.web.controllers.constants.ControllersConstants;
 import ru.hse.gears.web.exceptions.AuthenticationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

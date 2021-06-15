@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 
-import static ru.hse.gears.service.GameConstants.*;
+import static ru.hse.gears.service.constants.GameConstants.*;
 import static java.lang.Long.max;
 import static java.lang.Long.min;
 
