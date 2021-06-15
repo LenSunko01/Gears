@@ -3,12 +3,14 @@ package ru.hse.gears.models.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.hse.gears.models.dto.constants.DTOConstants.*;
+
 public class Board {
     private List<Gear> gears;
-    private Gutter rightGutter = new Gutter(60);
-    private Gutter leftGutter = new Gutter(300);
+    private Gutter rightGutter = new Gutter(RIGHT_GUTTER_START_DEGREE);
+    private Gutter leftGutter = new Gutter(LEFT_GUTTER_START_DEGREE);
     private Pot pot = new Pot();
-    final private int step = 10;
+    private final int step = STEP_DEGREE;
 
     public Board() {
     }
@@ -121,7 +123,7 @@ public class Board {
         double deg = 90 - upperHole.getDegree();
         double x = sumRadius * Math.cos(Math.toRadians(deg));
         double y = sumRadius * Math.sin(Math.toRadians(deg));
-        double mistake = sumRadius * 0.2;
+        double mistake = sumRadius * DIST_MISTAKE_COEF;
         x += upperGear.getX();
         y = upperGear.getY() - y;
         double dist = Math.sqrt(Math.pow((x - downGear.getX()), 2) + Math.pow((y - downGear.getY()), 2));
@@ -144,12 +146,13 @@ public class Board {
     }
 
     private boolean isEqualDegrees(int first, int second) {
-        return Math.abs(first - second) <= 9;
+        return Math.abs(first - second) <= DEGREE_MISTAKE;
     }
 
     private boolean checkDegreeEquals(Gear.Hole upperGearHole, Gear.Hole downGearHole, double xUpperGear, double xDownGear) {
         if (upperGearHole.getDegree() == 180) {
-            return downGearHole.getDegree() > 350 || downGearHole.getDegree() < 10;
+            return downGearHole.getDegree() > NEAR_ZERO_FROM_FOURTH_QUATER_MISTAKE_DEGREE
+                    || downGearHole.getDegree() < NEAR_ZERO_FROM_FIRST_QUATER_MISTAKE_DEGREE;
         }
         if (xUpperGear - xDownGear < 0) {
             return upperGearHole.getDegree() < 180 && downGearHole.getDegree() > 180 &&
@@ -178,9 +181,9 @@ public class Board {
             this.howManyBallsStart = other.howManyBallsStart;
         }
 
-        private int degree = 60;
-        private int howManyBalls = 1;
-        private int howManyBallsStart = 1;
+        private int degree;
+        private int howManyBalls = BALLS_START_IN_GUTTER;
+        private int howManyBallsStart = BALLS_START_IN_GUTTER;
 
         public Gutter(int degree) {
             this.degree = degree;
@@ -216,7 +219,7 @@ public class Board {
             this.howManyBalls = other.howManyBalls;
         }
 
-        private int degree = 120;
+        private int degree = POT_START_DEGREE;
         private int howManyBalls = 0;
 
         public int getDegree() {

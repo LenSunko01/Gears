@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import ru.hse.gears.web.controllers.constants.ControllersConstants;
 import ru.hse.gears.web.exceptions.AuthenticationException;
 import ru.hse.gears.web.exceptions.InvalidPasswordException;
 import ru.hse.gears.web.exceptions.InvalidUsernameException;

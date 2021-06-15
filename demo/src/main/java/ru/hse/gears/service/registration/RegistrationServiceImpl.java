@@ -6,7 +6,7 @@ import ru.hse.gears.service.token.TokenService;
 import ru.hse.gears.web.exceptions.InvalidPasswordException;
 import ru.hse.gears.web.exceptions.InvalidUsernameException;
 import org.springframework.stereotype.Service;
-import ru.hse.gears.service.GameConstants;
+import ru.hse.gears.service.constants.GameConstants;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
