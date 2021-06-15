@@ -1,6 +1,6 @@
 package ru.hse.gears.service.token;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.user.UserDao;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -8,9 +8,9 @@ import java.util.Base64;
 
 @Service
 public class TokenServiceImpl implements TokenService {
-    private final AllUsersDao allUsers;
+    private final UserDao allUsers;
 
-    public TokenServiceImpl(AllUsersDao allUsers) {
+    public TokenServiceImpl(UserDao allUsers) {
         this.allUsers = allUsers;
     }
 

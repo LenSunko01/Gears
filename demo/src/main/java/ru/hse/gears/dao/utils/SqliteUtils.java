@@ -1,4 +1,4 @@
-package ru.hse.gears.utils;
+package ru.hse.gears.dao.utils;
 
 import org.springframework.stereotype.Component;
 

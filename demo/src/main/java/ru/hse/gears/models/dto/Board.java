@@ -1,4 +1,5 @@
 package ru.hse.gears.models.dto;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,18 +10,21 @@ public class Board {
     private Pot pot = new Pot();
     final private int step = 10;
 
-    public Board() {}
+    public Board() {
+    }
+
     public Board(Board other) {
         this.gears = other.gears;
         this.rightGutter = new Gutter(other.rightGutter);
         this.leftGutter = new Gutter(other.leftGutter);
         this.pot = new Pot(other.pot);
         List<Gear> newGears = new ArrayList<>();
-        for (Gear gear: other.gears) {
+        for (Gear gear : other.gears) {
             newGears.add(new Gear(gear));
         }
         this.gears = newGears;
     }
+
     public Gutter getLeftGutter() {
         return leftGutter;
     }
@@ -165,7 +169,8 @@ public class Board {
     }
 
     public class Gutter {
-        public Gutter() { }
+        public Gutter() {
+        }
 
         public Gutter(Gutter other) {
             this.degree = other.degree;
@@ -203,7 +208,8 @@ public class Board {
     }
 
     public class Pot {
-        public Pot() { }
+        public Pot() {
+        }
 
         public Pot(Pot other) {
             this.degree = other.degree;
@@ -231,20 +237,4 @@ public class Board {
     }
 
 
-    public static void main(String[] args) {
-       /* Gear leftGear = new Gear(1, false, false, Collections.singletonList(1), Collections.emptyList());
-        Gear rightGear = new Gear(1, false, false,  Collections.emptyList(), Collections.singletonList(0));
-        leftGear.getHoles().get(0).setFree(true);
-        rightGear.getHoles().get(0).setFree(false);
-        Board b = new Board();
-        b.setGears(Arrays.asList(leftGear, rightGear));
-        b.rebuild(90, 0);
-        b.rebuild(-90, 1);
-        if (!b.getGears().get(1).getHoles().get(0).isFree()) {
-            System.out.println("URA");
-        } else {
-            System.out.println("PIZDA");
-        }*/
-
-    }
 }

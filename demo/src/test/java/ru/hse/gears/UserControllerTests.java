@@ -83,7 +83,7 @@ public class UserControllerTests {
         var map = new HashMap<String, Long>();
         map.put("Jane", 100L);
         map.put("Bob", 15500L);
-        doAnswer(new AnswersWithDelay(ControllersConstants.getUsersTimeoutInMilliseconds + 100L, new Returns(map))).when(userService).getAll();
+        doAnswer(new AnswersWithDelay(ControllersConstants.GET_USERS_TIMEOUT_IN_MILLISECONDS + 100L, new Returns(map))).when(userService).getAll();
         var result = mockMvc.perform(get("/users"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
@@ -111,7 +111,7 @@ public class UserControllerTests {
     @Test
     public void getRandomUserTimeoutTest() throws Exception {
         var mapEntry = new AbstractMap.SimpleEntry<>("Kate", 33L);
-        doAnswer(new AnswersWithDelay(ControllersConstants.getRandomUserTimeoutInMilliseconds + 100L, new Returns(mapEntry))).when(userService).getRandomUser();
+        doAnswer(new AnswersWithDelay(ControllersConstants.GET_RANDOM_USER_TIMEOUT_IN_MILLISECONDS + 100L, new Returns(mapEntry))).when(userService).getRandomUser();
         var result = mockMvc.perform(get("/random"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
@@ -150,7 +150,7 @@ public class UserControllerTests {
 
     @Test
     public void registerUserTimeoutTest() throws Exception {
-        doAnswer(new AnswersWithDelay(ControllersConstants.postRegisterUserTimeoutInMilliseconds + 100L,
+        doAnswer(new AnswersWithDelay(ControllersConstants.POST_REGISTER_USER_TIMEOUT_IN_MILLISECONDS + 100L,
                 new Returns(new User.UserInformation("token", 1L))))
                 .when(registrationService).registerUser("Kate", "pass");
         var result = mockMvc.perform(post("/register").param("username", "Kate").param("password", "pass"))
@@ -190,7 +190,7 @@ public class UserControllerTests {
 
     @Test
     public void loginUserTimeoutTest() throws Exception {
-        doAnswer(new AnswersWithDelay(ControllersConstants.postLoginUserTimeoutInMilliseconds + 100L,
+        doAnswer(new AnswersWithDelay(ControllersConstants.POST_LOGIN_USER_TIMEOUT_IN_MILLISECONDS + 100L,
                 new Returns(new User.UserInformation("token", 1L))))
                 .when(loginService).loginUser("Kate", "pass");
         var result = mockMvc.perform(post("/login").param("username", "Kate").param("password", "pass"))
@@ -239,7 +239,7 @@ public class UserControllerTests {
     public void getUserByIdTimeoutTest() throws Exception {
         var header = new HttpHeaders();
         header.add("token", "correctToken");
-        doAnswer(new AnswersWithDelay(ControllersConstants.getUserTimeoutInMilliseconds + 100L,
+        doAnswer(new AnswersWithDelay(ControllersConstants.GET_USER_TIMEOUT_IN_MILLISECONDS + 100L,
                 new Returns(new User(2L, "Katya", "123",32L, 0L, 0L, 0L))))
                 .when(userService).getUserById(2L, "correctToken");
         var result = mockMvc.perform(get("/user/{id}", 2L)
