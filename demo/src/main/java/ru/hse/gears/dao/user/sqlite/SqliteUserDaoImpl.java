@@ -1,8 +1,8 @@
-package ru.hse.gears.dao.allusers.sqlite;
+package ru.hse.gears.dao.user.sqlite;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.user.UserDao;
 import ru.hse.gears.models.dto.User;
-import ru.hse.gears.utils.SqliteUtils;
+import ru.hse.gears.dao.utils.SqliteUtils;
 import ru.hse.gears.web.controllers.UserController;
 import ru.hse.gears.web.exceptions.InvalidUsernameException;
 import ru.hse.gears.web.exceptions.UserBaseException;
@@ -20,7 +20,7 @@ import java.util.*;
 
 @Repository
 @Primary
-public class SqliteUserDaoImpl implements AllUsersDao {
+public class SqliteUserDaoImpl implements UserDao {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private static final String DB_FILE_NAME = "gameState.sql";
 

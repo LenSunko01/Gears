@@ -42,7 +42,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received GET game request with id " + id + " and player " + currentPlayer);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(ControllersConstants.getGameTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(ControllersConstants.GET_GAME_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET game by ID request completed for player " + currentPlayer));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET game request with id " + id + " and player " + currentPlayer);
@@ -68,7 +68,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received POST game request with id " + id + " and player " + currentPlayer);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(ControllersConstants.postGameTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(ControllersConstants.POST_GAME_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("POST game by ID request completed for player " + currentPlayer));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing POST game request with id " + id + " and player " + currentPlayer);
@@ -92,7 +92,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received GET board request with id " + id);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(ControllersConstants.getGameTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(ControllersConstants.GET_GAME_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET board by ID request completed for id " + id));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET board request with id " + id);
@@ -117,7 +117,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received POST init game request with id " + id + " and player " + currentPlayer);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(ControllersConstants.initGameTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<GameState>> output = new DeferredResult<>(ControllersConstants.INIT_GAME_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("POST init game request completed for player " + currentPlayer));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing POST init game request with id " + id + " and player " + currentPlayer);
@@ -142,7 +142,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received DELETE game request with id " + id + " and player " + currentPlayer);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(ControllersConstants.deleteGameTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(ControllersConstants.DELETE_GAME_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> {
             onGameDeletion(id);
             logger.info("DELETE game request completed for player " + currentPlayer);
@@ -172,7 +172,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received POST message request with id " + id + " and player " + currentPlayer);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(ControllersConstants.postMessageTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<String>> output = new DeferredResult<>(ControllersConstants.POST_MESSAGE_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("POST message request completed for player " + currentPlayer));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing POST message request with id " + id + " and player " + currentPlayer);
@@ -197,7 +197,7 @@ public class GameStateController {
     ) {
         logger.info("--------------> Received GET message request with id " + id + " and player " + currentPlayer);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<Message>> output = new DeferredResult<>(ControllersConstants.getMessageTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<Message>> output = new DeferredResult<>(ControllersConstants.GET_MESSAGE_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET message request completed for player " + currentPlayer));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET message request with id " + id + " and player " + currentPlayer);

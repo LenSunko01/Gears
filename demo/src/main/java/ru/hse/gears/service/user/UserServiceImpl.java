@@ -1,12 +1,9 @@
 package ru.hse.gears.service.user;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.user.UserDao;
 import ru.hse.gears.models.dto.User;
 import ru.hse.gears.service.registration.RegistrationService;
-import ru.hse.gears.web.controllers.UserController;
 import ru.hse.gears.web.exceptions.AuthenticationException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,11 +14,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private final AllUsersDao allUsers;
+    private final UserDao allUsers;
     private final RegistrationService registrationService;
 
     public UserServiceImpl(
-            AllUsersDao allUsers,
+            UserDao allUsers,
             RegistrationService registrationService) {
         this.allUsers = allUsers;
         this.registrationService = registrationService;

@@ -1,5 +1,4 @@
-package ru.hse.gears.dao.user;
-import ru.hse.gears.models.dto.User;
+package ru.hse.gears.dao.context;
 import ru.hse.gears.service.gamestate.GameStateService;
 import ru.hse.gears.service.registration.RegistrationService;
 import ru.hse.gears.service.user.UserService;

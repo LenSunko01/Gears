@@ -51,7 +51,7 @@ public class UserController {
     @GetMapping("/users")
     DeferredResult<ResponseEntity<Map<String, Long>>> getAllUsers() {
         logger.info("--------------> Received GET users request");
-        DeferredResult<ResponseEntity<Map<String, Long>>> output = new DeferredResult<>(ControllersConstants.getUsersTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<Map<String, Long>>> output = new DeferredResult<>(ControllersConstants.GET_USERS_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET users request completed"));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET users request");
@@ -71,7 +71,7 @@ public class UserController {
     @GetMapping("/rating")
     DeferredResult<ResponseEntity<List<User>>> getUsersByRating() {
         logger.info("--------------> Received GET rating request");
-        DeferredResult<ResponseEntity<List<User>>> output = new DeferredResult<>(ControllersConstants.getRatingTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<List<User>>> output = new DeferredResult<>(ControllersConstants.GET_RATING_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET rating request completed"));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET rating request");
@@ -91,7 +91,7 @@ public class UserController {
     @GetMapping("/random")
     DeferredResult<ResponseEntity<Map.Entry<String, Long>>> randomUser() {
         logger.info("--------------> Received GET random request");
-        DeferredResult<ResponseEntity<Map.Entry<String, Long>>> output = new DeferredResult<>(ControllersConstants.getRandomUserTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<Map.Entry<String, Long>>> output = new DeferredResult<>(ControllersConstants.GET_RANDOM_USER_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET random request completed"));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET random request");
@@ -112,7 +112,7 @@ public class UserController {
     DeferredResult<ResponseEntity<PictureWrapper>> getPicture(@RequestHeader HttpHeaders headers, @PathVariable Long id) {
         logger.info("--------------> Received GET picture request with id " + id);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<PictureWrapper>> output = new DeferredResult<>(ControllersConstants.getPictureTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<PictureWrapper>> output = new DeferredResult<>(ControllersConstants.GET_PICTURE_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET picture request completed with id " + id));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET picture request with id " + id);
@@ -132,7 +132,7 @@ public class UserController {
     @PostMapping("/register")
     public DeferredResult<ResponseEntity<User.UserInformation>> registerUser(@RequestParam String username, @RequestParam String password) {
         logger.info("--------------> Received POST register request with username " + username);
-        DeferredResult<ResponseEntity<User.UserInformation>> output = new DeferredResult<>(ControllersConstants.postRegisterUserTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<User.UserInformation>> output = new DeferredResult<>(ControllersConstants.POST_REGISTER_USER_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("POST register request completed with username " + username));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing POST register request with username " + username);
@@ -152,7 +152,7 @@ public class UserController {
     @PostMapping("/login")
     public DeferredResult<ResponseEntity<User.UserInformation>> loginUser(@RequestParam String username, @RequestParam String password) {
         logger.info("--------------> Received POST login request with username " + username);
-        DeferredResult<ResponseEntity<User.UserInformation>> output = new DeferredResult<>(ControllersConstants.postLoginUserTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<User.UserInformation>> output = new DeferredResult<>(ControllersConstants.POST_LOGIN_USER_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("POST login user request completed with username " + username));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing POST login user request with username " + username);
@@ -173,7 +173,7 @@ public class UserController {
     DeferredResult<ResponseEntity<User>> getUser(@RequestHeader HttpHeaders headers, @PathVariable Long id) {
         logger.info("--------------> Received GET user request with id " + id);
         var token = headers.getFirst("token");
-        DeferredResult<ResponseEntity<User>> output = new DeferredResult<>(ControllersConstants.getUserTimeoutInMilliseconds);
+        DeferredResult<ResponseEntity<User>> output = new DeferredResult<>(ControllersConstants.GET_USER_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("GET user request completed with id " + id));
         output.onTimeout(() -> {
             logger.info("TIMEOUT: Timeout during executing GET user request with id " + id);
@@ -198,7 +198,7 @@ public class UserController {
     DeferredResult<Map.Entry<Long, Boolean>> findOpponent(@RequestHeader HttpHeaders headers, @RequestParam String username) {
         logger.info("--------------> Received GET user request with username " + username);
         var token = headers.getFirst("token");
-        DeferredResult<Map.Entry<Long, Boolean>> output = new DeferredResult<>(ControllersConstants.postFindOpponentTimeoutInMilliseconds);
+        DeferredResult<Map.Entry<Long, Boolean>> output = new DeferredResult<>(ControllersConstants.POST_FIND_OPPONENT_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> {
             logger.info("POST find opponent request completed for " + username);
             removeFromMatchingQueue(output);
@@ -225,7 +225,7 @@ public class UserController {
     ) {
         logger.info("Received PUT username request");
         var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putUsernameTimeoutInMilliseconds);
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.PUT_USERNAME_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("PUT request completed"));
         output.onTimeout(() -> {
             logger.info("Timeout during executing PUT username request");
@@ -248,7 +248,7 @@ public class UserController {
     ) {
         logger.info("Received PUT picture request");
         var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPictureTimeoutInMilliseconds);
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.PUT_PICTURE_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("PUT request completed"));
         output.onTimeout(() -> {
             logger.info("Timeout during executing PUT picture request");
@@ -271,7 +271,7 @@ public class UserController {
     ) {
         logger.info("Received PUT password request");
         var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPasswordTimeoutInMilliseconds);
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.PUT_PASSWORD_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("PUT request completed"));
         output.onTimeout(() -> {
             logger.info("Timeout during executing PUT password request");
@@ -294,7 +294,7 @@ public class UserController {
     ) {
         logger.info("Received PUT points request");
         var token = headers.getFirst("token");
-        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.putPointsTimeoutInMilliseconds);
+        DeferredResult<User> output = new DeferredResult<>(ControllersConstants.PUT_POINTS_TIMEOUT_IN_MILLISECONDS);
         output.onCompletion(() -> logger.info("PUT request completed"));
         output.onTimeout(() -> {
             logger.info("Timeout during executing PUT points request");
@@ -325,7 +325,7 @@ public class UserController {
 
     private void getRating(DeferredResult<ResponseEntity<List<User>>> output) {
         try {
-            var list = userService.getSortedByRatingList(ControllersConstants.numberOfUsersShownInRating);
+            var list = userService.getSortedByRatingList(ControllersConstants.NUMBER_OF_USERS_SHOWN_IN_RATING);
             output.setResult(ResponseEntity.ok(list));
             logger.info("Completed GET rating request");
         } catch (Exception e) {

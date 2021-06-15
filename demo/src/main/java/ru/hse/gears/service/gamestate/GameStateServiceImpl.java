@@ -1,6 +1,6 @@
 package ru.hse.gears.service.gamestate;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.user.UserDao;
 import ru.hse.gears.dao.gamestate.GameStateDao;
 import ru.hse.gears.models.dto.Board;
 import ru.hse.gears.models.dto.GameState;
@@ -21,10 +21,10 @@ import static java.lang.Long.min;
 public class GameStateServiceImpl implements GameStateService {
     private static final Log logger = LogFactory.getLog(UserController.class);
     private final GameStateDao gameStateRepository;
-    private final AllUsersDao allUsers;
+    private final UserDao allUsers;
     public GameStateServiceImpl(
             GameStateDao gameStateDao,
-            AllUsersDao allUsers) {
+            UserDao allUsers) {
         this.gameStateRepository = gameStateDao;
         this.allUsers = allUsers;
     }
@@ -133,13 +133,13 @@ public class GameStateServiceImpl implements GameStateService {
         long pointsDifference;
         if (winnerPoints >= loserPoints) {
             if (loserPoints == 0) {
-                allUsers.updatePointsById(winner.getId(), winnerPoints + pointsIfStrongerBeatsWeaker);
+                allUsers.updatePointsById(winner.getId(), winnerPoints + POINTS_IF_STRONGER_BEATS_WEAKER);
                 return;
             }
-            pointsDifference = min(loserPoints, pointsIfStrongerBeatsWeaker);
+            pointsDifference = min(loserPoints, POINTS_IF_STRONGER_BEATS_WEAKER);
         } else {
-            pointsDifference = max(min(loserPoints, pointsIfWeakerBeatsStronger),
-                    (loserPoints - winnerPoints) / pointsNormalizationFactor);
+            pointsDifference = max(min(loserPoints, POINTS_IF_WEAKER_BEATS_STRONGER),
+                    (loserPoints - winnerPoints) / POINTS_NORMALIZATION_FACTOR);
         }
         allUsers.updatePointsById(winner.getId(), winnerPoints + pointsDifference);
         allUsers.updatePointsById(loser.getId(), loserPoints - pointsDifference);

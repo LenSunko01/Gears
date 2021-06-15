@@ -1,11 +1,11 @@
-package ru.hse.gears.dao.allusers;
+package ru.hse.gears.dao.user;
 
 import ru.hse.gears.models.dto.User;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-public interface AllUsersDao {
+public interface UserDao {
     User getUserByUsername(String username);
 
     boolean checkUsernameExists(String username);

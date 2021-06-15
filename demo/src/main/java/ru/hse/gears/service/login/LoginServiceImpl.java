@@ -1,6 +1,6 @@
 package ru.hse.gears.service.login;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.user.UserDao;
 import ru.hse.gears.models.dto.User;
 import ru.hse.gears.service.token.TokenService;
 import ru.hse.gears.web.exceptions.InvalidUsernameException;
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LoginServiceImpl implements LoginService {
-    private final AllUsersDao allUsers;
+    private final UserDao allUsers;
     private final TokenService tokenService;
 
-    public LoginServiceImpl(AllUsersDao allUsers, TokenService tokenService) {
+    public LoginServiceImpl(UserDao allUsers, TokenService tokenService) {
         this.allUsers = allUsers;
         this.tokenService = tokenService;
     }

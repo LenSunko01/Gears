@@ -1,12 +1,13 @@
-package ru.hse.gears.dao.allusers;
+package ru.hse.gears.dao.user.inmemory;
 
+import ru.hse.gears.dao.user.UserDao;
 import ru.hse.gears.models.dto.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-public class AllUsersDaoImpl implements AllUsersDao {
+public class UserDaoImpl implements UserDao {
     Map<String, User> usernameToUser = new HashMap<>();
     Map<User, String> userToUsername = new HashMap<>();
     Map<String, String> usernameToPassword = new HashMap<>();

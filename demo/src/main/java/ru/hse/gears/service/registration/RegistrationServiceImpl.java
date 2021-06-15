@@ -1,6 +1,6 @@
 package ru.hse.gears.service.registration;
 
-import ru.hse.gears.dao.allusers.AllUsersDao;
+import ru.hse.gears.dao.user.UserDao;
 import ru.hse.gears.models.dto.User;
 import ru.hse.gears.service.token.TokenService;
 import ru.hse.gears.web.exceptions.InvalidPasswordException;
@@ -10,11 +10,11 @@ import ru.hse.gears.service.GameConstants;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
-    private final AllUsersDao allUsers;
+    private final UserDao allUsers;
     private final TokenService tokenService;
 
     public RegistrationServiceImpl(
-            AllUsersDao allUsers,
+            UserDao allUsers,
             TokenService tokenService
     ) {
         this.allUsers = allUsers;
@@ -27,7 +27,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         checkPasswordIsValid(password);
 
         var token = tokenService.generateNewToken();
-        allUsers.addUser(username, password, token, GameConstants.newUserPoints);
+        allUsers.addUser(username, password, token, GameConstants.NEW_USER_POINTS);
         return new User.UserInformation(token, allUsers.getIdByUsername(username));
     }
 
