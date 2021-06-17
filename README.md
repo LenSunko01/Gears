@@ -2,6 +2,7 @@
 
 An online game for two players for Android 
 
+https://github.com/JaneKirillova/Gears  - Android
 ## Rules
 
 At the beginning of the game, each player is given a set of 12 tokens. The object of the game is to move all your tokens to the bottom of the board before your opponent does so. Players take turns; in one move, you can turn exactly one gear as many times as you like in any direction. 
