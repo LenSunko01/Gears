@@ -19,3 +19,7 @@ After that, the player's rating is recalculated, and the opponent's rating is ta
 
 ## Messages and timing 
 During the game, you can send stickers to your opponent, but hurry up, because the turn time is limited! 
+
+## Scrinshots
+
+![Image alt](https://github.com/LenSunko01/Gears/samples/settings.jpg)
