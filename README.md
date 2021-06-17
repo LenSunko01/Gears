@@ -22,4 +22,4 @@ During the game, you can send stickers to your opponent, but hurry up, because t
 
 ## Scrinshots
 
-![Image alt](https://github.com/LenSunko01/Gears/samples/settings.jpg)
+![Image alt](samples/settings.jpg)
