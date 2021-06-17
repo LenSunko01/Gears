@@ -25,7 +25,7 @@ During the game, you can send stickers to your opponent, but hurry up, because t
 ![Image alt](samples/game.jpg)
 
 
-![Image alt](samples/settings.jpg)
+![Image alt](samples/new_settings.jpg)
 
 
 ![Image alt](samples/top.jpg)
